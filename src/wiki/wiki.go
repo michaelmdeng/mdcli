@@ -70,7 +70,7 @@ func Convert(input string, output string, template string, css string, force boo
 func pandocConvert(input string, output string, template string, css string) error {
 	err := cmd.RunCommand(
 		"pandoc", input,
-		"-r", "md",
+		"-r", "markdown",
 		"-w", "html",
 		"-o", output,
 		"--template", template,
