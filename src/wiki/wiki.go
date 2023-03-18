@@ -2,13 +2,23 @@ package wiki
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/mdcli/cmd"
 )
+
+var (
+	linkWhitespacePattern = regexp.MustCompile(`\s+`)
+)
+
+func GenerateLink(text string) string {
+	return fmt.Sprintf("[%v](%v)", text, strings.ToLower(linkWhitespacePattern.ReplaceAllString(text, "-")))
+}
 
 func Transform(inputDir string, outputDir string, template string, css string, force bool) error {
 	fileSystem := os.DirFS(inputDir)
