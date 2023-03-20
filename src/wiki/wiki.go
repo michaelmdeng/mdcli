@@ -35,8 +35,6 @@ func Transform(inputDir string, outputDir string, template string, css string, f
 		outputPath := path.Join(outputDir, strings.TrimSuffix(p, ".md") + ".html")
 		return Convert(inputPath, outputPath, template, css, force)
 	})
-
-	return nil
 }
 
 func Convert(input string, output string, template string, css string, force bool) error {
@@ -68,11 +66,15 @@ func Convert(input string, output string, template string, css string, force boo
 }
 
 func pandocConvert(input string, output string, template string, css string) error {
+	fileNameExt := path.Base(output)
+	fileExt := path.Ext(output)
+	fileName := strings.TrimSuffix(fileNameExt, fileExt)
 	err := cmd.RunCommand(
 		"pandoc", input,
 		"-r", "markdown",
 		"-w", "html",
 		"-o", output,
+		"--metadata", fmt.Sprintf("title=\"%v\"", fileName),
 		"--template", template,
 		"--css", css,
 	)
