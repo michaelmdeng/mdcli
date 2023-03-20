@@ -264,9 +264,15 @@ func setPaneWindowLayout(session string, window string) error {
 		}
 	}
 
-	err = setDefaultLayout(session, window)
-	if err != nil {
-		return err
+	for mainWindow, _ := range mainWindows {
+		if window != "" && mainWindow != window {
+			continue
+		}
+
+		err = setDefaultLayout(session, mainWindow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

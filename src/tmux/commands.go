@@ -39,7 +39,28 @@ func layoutCommand() *cli.Command {
 		    },
 		},
 		Action: func(cCtx *cli.Context) error {
-			return setDefaultLayout(cCtx.String("session"), cCtx.String("window"))
+			session := cCtx.String("session")
+			window := cCtx.String("window")
+
+			var windows []string
+			var err error
+			if window == "" {
+				windows, err = listWindows(session)
+				if err != nil {
+					return err
+				}
+			} else {
+				windows = []string{window}
+			}
+
+			for _, window := range windows {
+				err := setDefaultLayout(session, window)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
 		},
 	}
 }
