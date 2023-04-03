@@ -6,12 +6,12 @@ import (
 
 func Test_GenerateLink(t *testing.T) {
 	cases := map[string]string{
-		"foo": "[foo](foo)",
-		"hello world": "[hello world](hello-world)",
-		"Bar": "[Bar](bar)",
-		"camelCase": "[camelCase](camelcase)",
+		"foo":                 "[foo](foo)",
+		"hello world":         "[hello world](hello-world)",
+		"Bar":                 "[Bar](bar)",
+		"camelCase":           "[camelCase](camelcase)",
 		"This is a sentence.": "[This is a sentence.](this-is-a-sentence.)",
-		"multi\nline": "[multi\nline](multi-line)",
+		"multi\nline":         "[multi\nline](multi-line)",
 	}
 
 	for input, expected := range cases {
