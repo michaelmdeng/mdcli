@@ -13,35 +13,35 @@ import (
 
 var (
 	checksumPatternString = `[a-f0-9]{4}`
-	checksumPattern = regexp.MustCompile(checksumPatternString)
+	checksumPattern       = regexp.MustCompile(checksumPatternString)
 
 	dimensionPatternString = `(?P<width>\d+)x(?P<height>\d+),\d+,\d+`
-	dimensionPattern = regexp.MustCompile(dimensionPatternString)
+	dimensionPattern       = regexp.MustCompile(dimensionPatternString)
 
 	ignoreDimensionPatternString = `\d+x\d+,\d+,\d+`
-	ignoreDimensionPattern = regexp.MustCompile(ignoreDimensionPatternString)
+	ignoreDimensionPattern       = regexp.MustCompile(ignoreDimensionPatternString)
 
 	sidePanesPatternString = `\[(?P<sidePanes>.*)\]`
-	sidePanesPattern = regexp.MustCompile(sidePanesPatternString)
+	sidePanesPattern       = regexp.MustCompile(sidePanesPatternString)
 
 	sidePanePatternString = `\d+x\d+,\d+,\d+,(?P<sidePaneId>\d+)`
-	sidePanePattern = regexp.MustCompile(sidePanePatternString)
+	sidePanePattern       = regexp.MustCompile(sidePanePatternString)
 
 	singlePanePattern = regexp.MustCompile(fmt.Sprintf("^%v,%v,%v", checksumPatternString, dimensionPatternString, `(?P<mainPaneId>\d+)`))
-	twoPanePattern = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v,%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, `(?P<sidePaneId>\d+)`))
-	multiPanePattern = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, sidePanesPatternString))
+	twoPanePattern    = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v,%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, `(?P<sidePaneId>\d+)`))
+	multiPanePattern  = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, sidePanesPatternString))
 )
 
 type tmuxLayout struct {
-	csum string
+	csum   string
 	layout string
 }
 
 type baseLayout struct {
-	mainPaneId string
+	mainPaneId  string
 	sidePaneIds []string
-	width int
-	height int
+	width       int
+	height      int
 }
 
 func (l *tmuxLayout) String() string {
@@ -60,13 +60,13 @@ func layoutChecksum(layout string) string {
 
 func newTmuxLayout(layout string) *tmuxLayout {
 	return &tmuxLayout{
-		csum: layoutChecksum(layout),
+		csum:   layoutChecksum(layout),
 		layout: layout,
 	}
 }
 
 func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
-	if (singlePanePattern.Match([]byte(layout.String()))) {
+	if singlePanePattern.Match([]byte(layout.String())) {
 		matches := singlePanePattern.FindStringSubmatch(layout.String())
 
 		mainPaneId := matches[singlePanePattern.SubexpIndex("mainPaneId")]
@@ -82,12 +82,12 @@ func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
 		}
 
 		return &baseLayout{
-			mainPaneId: mainPaneId,
+			mainPaneId:  mainPaneId,
 			sidePaneIds: []string{},
-			width: width,
-			height: height,
+			width:       width,
+			height:      height,
 		}, nil
-	} else if (twoPanePattern.Match([]byte(layout.String()))) {
+	} else if twoPanePattern.Match([]byte(layout.String())) {
 		matches := twoPanePattern.FindStringSubmatch(layout.String())
 
 		mainPaneId := matches[twoPanePattern.SubexpIndex("mainPaneId")]
@@ -104,12 +104,12 @@ func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
 		}
 
 		return &baseLayout{
-			mainPaneId: mainPaneId,
+			mainPaneId:  mainPaneId,
 			sidePaneIds: []string{sidePaneId},
-			width: width,
-			height: height,
+			width:       width,
+			height:      height,
 		}, nil
-	} else if (multiPanePattern.Match([]byte(layout.String()))) {
+	} else if multiPanePattern.Match([]byte(layout.String())) {
 		matches := multiPanePattern.FindStringSubmatch(layout.String())
 
 		mainPaneId := matches[multiPanePattern.SubexpIndex("mainPaneId")]
@@ -132,10 +132,10 @@ func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
 		}
 
 		return &baseLayout{
-			mainPaneId: mainPaneId,
+			mainPaneId:  mainPaneId,
 			sidePaneIds: sidePaneIds,
-			width: width,
-			height: height,
+			width:       width,
+			height:      height,
 		}, nil
 	}
 
@@ -150,25 +150,25 @@ func defaultLayout(layout *baseLayout) (*tmuxLayout, error) {
 		return newTmuxLayout(fmt.Sprintf("%vx%v,0,0,%v", layout.width, layout.height, layout.mainPaneId)), nil
 	} else if len(layout.sidePaneIds) == 1 {
 		mainLayout := fmt.Sprintf("%vx%v,0,0,%v", mainWidth, layout.height, layout.mainPaneId)
-		sideLayout := fmt.Sprintf("%vx%v,%v,0,%v", sideWidth, layout.height, mainWidth + 1, layout.mainPaneId)
+		sideLayout := fmt.Sprintf("%vx%v,%v,0,%v", sideWidth, layout.height, mainWidth+1, layout.mainPaneId)
 
 		return newTmuxLayout(fmt.Sprintf("%vx%v,0,0{%v,%v}", layout.width, layout.height, mainLayout, sideLayout)), nil
 	} else {
 		mainLayout := fmt.Sprintf("%vx%v,0,0,%v", mainWidth, layout.height, layout.mainPaneId)
 
-		sideLayout := fmt.Sprintf("%vx%v,%v,0", layout.width - mainWidth, layout.height, mainWidth + 1)
+		sideLayout := fmt.Sprintf("%vx%v,%v,0", layout.width-mainWidth, layout.height, mainWidth+1)
 		sideLayouts := make([]string, 0)
 		numSidePanes := len(layout.sidePaneIds)
 		for i, paneId := range layout.sidePaneIds {
 			sideStart := 0
 			if i != 0 {
-				sideStart = int(math.Round(float64(i) * float64(layout.height) / float64(numSidePanes))) + 1
+				sideStart = int(math.Round(float64(i)*float64(layout.height)/float64(numSidePanes))) + 1
 			}
-			
-			sideEnd := int(math.Round(float64(1 + i) * float64(layout.height) / float64(numSidePanes)))
+
+			sideEnd := int(math.Round(float64(1+i) * float64(layout.height) / float64(numSidePanes)))
 			sideHeight := sideEnd - sideStart
 
-			sideLayout := fmt.Sprintf("%vx%v,%v,%v,%v", sideWidth, sideHeight, mainWidth + 1, sideStart, paneId)
+			sideLayout := fmt.Sprintf("%vx%v,%v,%v,%v", sideWidth, sideHeight, mainWidth+1, sideStart, paneId)
 			sideLayouts = append(sideLayouts, sideLayout)
 		}
 
@@ -195,8 +195,8 @@ func getLayout(session string, window string) (*tmuxLayout, error) {
 	csum, layout, _ := strings.Cut(layoutStr, ",")
 
 	return &tmuxLayout{
-		csum: csum,
-		layout: layout, 
+		csum:   csum,
+		layout: layout,
 	}, nil
 }
 
