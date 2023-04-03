@@ -32,7 +32,7 @@ func Transform(inputDir string, outputDir string, template string, css string, f
 		}
 
 		inputPath := path.Join(inputDir, p)
-		outputPath := path.Join(outputDir, strings.TrimSuffix(p, ".md") + ".html")
+		outputPath := path.Join(outputDir, strings.TrimSuffix(p, ".md")+".html")
 		return Convert(inputPath, outputPath, template, css, force)
 	})
 }

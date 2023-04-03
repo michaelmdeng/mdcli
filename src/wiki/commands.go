@@ -9,11 +9,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const wikiUsage = `Provides commands for managing my personal wiki`
+
 func BaseCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "wiki",
 		Aliases: []string{"w"},
-		Usage:   "Tasks for personal wiki",
+		Usage:   wikiUsage,
 		Subcommands: []*cli.Command{
 			convertCommand(),
 			transformCommand(),
@@ -22,29 +24,31 @@ func BaseCommand() *cli.Command {
 	}
 }
 
+const convertUsage = `Converts a wiki page in markdown to html`
+
 func convertCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "convert",
 		Aliases: []string{"c"},
-		Usage:   "Convert a wiki page to html",
+		Usage:   convertUsage,
 		Flags: []cli.Flag{
-		    &cli.StringFlag{
-			Name:  "css",
-			Aliases: []string{"c"},
-			Value: ".local/share/pandoc/templates/default.css",
-			Usage: "CSS template `FILE`",
-		    },
-		    &cli.StringFlag{
-			Name:  "template",
-			Aliases: []string{"t"},
-			Value: ".local/share/pandoc/templates/default.html5",
-			Usage: "HTML template `FILE`",
-		    },
-		    &cli.BoolFlag{
-			Name:  "force",
-			Aliases: []string{"f"},
-			Usage: "Force conversion of md to html",
-		    },
+			&cli.StringFlag{
+				Name:    "css",
+				Aliases: []string{"c"},
+				Value:   ".local/share/pandoc/templates/default.css",
+				Usage:   "CSS template `FILE` to convert with",
+			},
+			&cli.StringFlag{
+				Name:    "template",
+				Aliases: []string{"t"},
+				Value:   ".local/share/pandoc/templates/default.html5",
+				Usage:   "HTML template `FILE` to convert with",
+			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "Force conversion of md to html",
+			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			inputPath := cCtx.Args().First()
@@ -53,7 +57,7 @@ func convertCommand() *cli.Command {
 			fileExt := path.Ext(inputPath)
 			fileName := strings.TrimSuffix(fileNameExt, fileExt)
 			htmlPath := path.Join(path.Dir(inputPath), "../html")
-			outputPath := path.Join(htmlPath, fileName + ".html")
+			outputPath := path.Join(htmlPath, fileName+".html")
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
@@ -69,29 +73,31 @@ func convertCommand() *cli.Command {
 	}
 }
 
+const transformUsage = `Converts a wiki folder in markdown to html`
+
 func transformCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "transform",
 		Aliases: []string{"t"},
-		Usage:   "Convert an entire wiki folder to html",
+		Usage:   transformUsage,
 		Flags: []cli.Flag{
-		    &cli.StringFlag{
-			Name:  "css",
-			Aliases: []string{"c"},
-			Value: ".local/share/pandoc/templates/default.css",
-			Usage: "CSS template `FILE`",
-		    },
-		    &cli.StringFlag{
-			Name:  "template",
-			Aliases: []string{"t"},
-			Value: ".local/share/pandoc/templates/default.html5",
-			Usage: "HTML template `FILE`",
-		    },
-		    &cli.BoolFlag{
-			Name:  "force",
-			Aliases: []string{"f"},
-			Usage: "Force conversion of md to html",
-		    },
+			&cli.StringFlag{
+				Name:    "css",
+				Aliases: []string{"c"},
+				Value:   ".local/share/pandoc/templates/default.css",
+				Usage:   "CSS template `FILE` to transform with",
+			},
+			&cli.StringFlag{
+				Name:    "template",
+				Aliases: []string{"t"},
+				Value:   ".local/share/pandoc/templates/default.html5",
+				Usage:   "HTML template `FILE` to transform with",
+			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "Force conversion of md to html",
+			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			inputDir := cCtx.Args().First()
@@ -111,35 +117,39 @@ func transformCommand() *cli.Command {
 	}
 }
 
+const openUsage = `Opens a wiki page in the browser
+
+Converts the page to html if necessary, or if force is set`
+
 func openCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "open",
 		Aliases: []string{"o"},
-		Usage:   "Open a wiki page in the browser",
+		Usage:   openUsage,
 		Flags: []cli.Flag{
-		    &cli.StringFlag{
-			Name:  "css",
-			Aliases: []string{"c"},
-			Value: ".local/share/pandoc/templates/default.css",
-			Usage: "CSS template `FILE`",
-		    },
-		    &cli.StringFlag{
-			Name:  "template",
-			Aliases: []string{"t"},
-			Value: ".local/share/pandoc/templates/default.html5",
-			Usage: "HTML template `FILE`",
-		    },
-		    &cli.StringFlag{
-			Name:  "browser",
-			Aliases: []string{"b"},
-			Value: "firefox",
-			Usage: "Browser to open the page in",
-		    },
-		    &cli.BoolFlag{
-			Name:  "force",
-			Aliases: []string{"f"},
-			Usage: "Force conversion of md to html",
-		    },
+			&cli.StringFlag{
+				Name:    "css",
+				Aliases: []string{"c"},
+				Value:   ".local/share/pandoc/templates/default.css",
+				Usage:   "CSS template `FILE` to convert with",
+			},
+			&cli.StringFlag{
+				Name:    "template",
+				Aliases: []string{"t"},
+				Value:   ".local/share/pandoc/templates/default.html5",
+				Usage:   "HTML template `FILE` to convert with",
+			},
+			&cli.StringFlag{
+				Name:    "browser",
+				Aliases: []string{"b"},
+				Value:   "firefox",
+				Usage:   "Browser to open the page in",
+			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "Force conversion of md to html",
+			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			inputPath := cCtx.Args().First()
@@ -148,7 +158,7 @@ func openCommand() *cli.Command {
 			fileExt := path.Ext(inputPath)
 			fileName := strings.TrimSuffix(fileNameExt, fileExt)
 			htmlPath := path.Join(path.Dir(inputPath), "../html")
-			outputPath := path.Join(htmlPath, fileName + ".html")
+			outputPath := path.Join(htmlPath, fileName+".html")
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {

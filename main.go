@@ -8,10 +8,21 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const (
+	Version = "0.0.1"
+)
+
 func main() {
 	app := &cli.App{
 		Name:  "mdcli",
-		Usage: "Custom CLI",
+		Usage: "mdeng personal CLI",
+		Authors: []*cli.Author{
+			{
+				Name:  "mdeng",
+				Email: "michaelmdeng@gmail.com",
+			},
+		},
+		Version: Version,
 		Commands: []*cli.Command{
 			wiki.BaseCommand(),
 			tmux.BaseCommand(),

@@ -2,7 +2,12 @@ module github.com/mdcli/tmux
 
 go 1.20
 
-require github.com/urfave/cli/v2 v2.25.0
+replace github.com/mdcli/cmd => ../cmd
+
+require (
+	github.com/mdcli/cmd v0.0.0-00010101000000-000000000000
+	github.com/urfave/cli/v2 v2.25.0
+)
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
