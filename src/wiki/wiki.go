@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -83,4 +84,76 @@ func pandocConvert(input string, output string, template string, css string) err
 	}
 
 	return nil
+}
+
+func basePath(path string) (string, error) {
+	fullPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+
+	walkPath := fullPath
+	var fullBasePath string
+	for {
+		dir := filepath.Dir(walkPath)
+		if wikiDir := dir; filepath.Base(dir) == "wiki" {
+			fullBasePath = filepath.Dir(wikiDir)
+			break
+		}
+
+		if dir == "." || dir == "/" {
+			return "", errors.New("unable to find wiki base path")
+		}
+
+		walkPath = dir
+	}
+
+	return fullBasePath, nil
+}
+
+func wikiPath(path string) (string, error) {
+	basePath, err := basePath(path)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(basePath, "wiki"), nil
+}
+
+func htmlPath(path string) (string, error) {
+	basePath, err := basePath(path)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(basePath, "html"), nil
+}
+
+func HtmlOutputPath(input string) (string, error) {
+	inputPath, err := filepath.Abs(input)
+	if err != nil {
+		return "", err
+	}
+
+	wikiPath, err := wikiPath(inputPath)
+	if err != nil {
+		return "", err
+	}
+
+	relInputPath, err := filepath.Rel(wikiPath, inputPath)
+	if err != nil {
+		return "", err
+	}
+
+	fileExt := path.Ext(inputPath)
+
+	htmlPath, err := htmlPath(inputPath)
+	if err != nil {
+		return "", err
+	}
+
+	relHtmlPath := strings.TrimSuffix(relInputPath, fileExt) + ".html"
+	outputPath := path.Join(htmlPath, relHtmlPath)
+
+	return outputPath, nil
 }
