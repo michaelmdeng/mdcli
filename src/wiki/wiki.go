@@ -49,7 +49,7 @@ func Convert(input string, output string, template string, css string, force boo
 	}
 
 	var shouldConvert bool
-	if outputStat, err := os.Stat(input); os.IsNotExist(err) {
+	if outputStat, err := os.Stat(output); os.IsNotExist(err) {
 		shouldConvert = true
 	} else {
 		if inputStat.ModTime().After(outputStat.ModTime()) {
