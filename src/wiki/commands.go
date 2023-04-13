@@ -3,7 +3,6 @@ package wiki
 import (
 	"os"
 	"path"
-	"strings"
 
 	"github.com/mdcli/cmd"
 	"github.com/urfave/cli/v2"
@@ -52,12 +51,10 @@ func convertCommand() *cli.Command {
 		},
 		Action: func(cCtx *cli.Context) error {
 			inputPath := cCtx.Args().First()
-
-			fileNameExt := path.Base(inputPath)
-			fileExt := path.Ext(inputPath)
-			fileName := strings.TrimSuffix(fileNameExt, fileExt)
-			htmlPath := path.Join(path.Dir(inputPath), "../html")
-			outputPath := path.Join(htmlPath, fileName+".html")
+			outputPath, err := HtmlOutputPath(inputPath)
+			if err != nil {
+				return err
+			}
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
@@ -153,12 +150,10 @@ func openCommand() *cli.Command {
 		},
 		Action: func(cCtx *cli.Context) error {
 			inputPath := cCtx.Args().First()
-
-			fileNameExt := path.Base(inputPath)
-			fileExt := path.Ext(inputPath)
-			fileName := strings.TrimSuffix(fileNameExt, fileExt)
-			htmlPath := path.Join(path.Dir(inputPath), "../html")
-			outputPath := path.Join(htmlPath, fileName+".html")
+			outputPath, err := HtmlOutputPath(inputPath)
+			if err != nil {
+				return err
+			}
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
