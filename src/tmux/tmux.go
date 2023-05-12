@@ -10,15 +10,23 @@ import (
 func currentWindow() (string, string, error) {
 	output, err := cmd.CaptureCommand(
 		"tmux", "display-message",
-		"-p", "#S:#W",
+		"-p", "\"#S:#W\"",
 	)
 	if err != nil {
 		return "", "", err
 	}
 
+
+	output = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(output), "\""), "\"")
 	splitOutput := strings.Split(strings.TrimSpace(output), ":")
 	return splitOutput[0], splitOutput[1], nil
+}
 
+func selectWindow(session string, window string) error {
+	return cmd.RunCommand(
+		"tmux", "select-window",
+		"-t", fmt.Sprintf("%v:%v", session, window),
+	)
 }
 
 func listPanes(session string, window string) ([]string, error) {

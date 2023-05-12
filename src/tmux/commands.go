@@ -72,8 +72,29 @@ func layoutCommand() *cli.Command {
 				windows = []string{window}
 			}
 
+			var currSession string
+			var currWindow string
+			if len(windows) > 1 {
+				currSession, currWindow, err = currentWindow()
+				if err != nil {
+					return nil
+				}
+			}
+
 			for _, window := range windows {
+				err = selectWindow(session, window)
+				if err != nil {
+					return err
+				}
+
 				err := setDefaultLayout(session, window)
+				if err != nil {
+					return err
+				}
+			}
+
+			if len(currWindow) > 0 {
+				err = selectWindow(currSession, currWindow)
 				if err != nil {
 					return err
 				}
