@@ -1,6 +1,8 @@
 package tmux
 
 import (
+	"fmt"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -74,7 +76,10 @@ func layoutCommand() *cli.Command {
 
 			var currSession string
 			var currWindow string
+			aggregateErrors := false
+			aggregatedErrors := []error{}
 			if len(windows) > 1 {
+				aggregateErrors = true
 				currSession, currWindow, err = currentWindow()
 				if err != nil {
 					return nil
@@ -84,12 +89,20 @@ func layoutCommand() *cli.Command {
 			for _, window := range windows {
 				err = selectWindow(session, window)
 				if err != nil {
-					return err
+					if aggregateErrors {
+						aggregatedErrors = append(aggregatedErrors, err)
+					} else {
+						return err
+					}
 				}
 
 				err := setDefaultLayout(session, window)
 				if err != nil {
-					return err
+					if aggregateErrors {
+						aggregatedErrors = append(aggregatedErrors, err)
+					} else {
+						return err
+					}
 				}
 			}
 
@@ -98,6 +111,10 @@ func layoutCommand() *cli.Command {
 				if err != nil {
 					return err
 				}
+			}
+
+			if aggregateErrors && len(aggregatedErrors) > 0 {
+				return fmt.Errorf("Encountered errors in setting layout: %v", aggregatedErrors)
 			}
 
 			return nil
