@@ -78,6 +78,7 @@ func pandocConvert(input string, output string, template string, css string) err
 		"--metadata", fmt.Sprintf("title=\"%v\"", fileName),
 		"--template", template,
 		"--css", css,
+		"--self-contained",
 	)
 	if err != nil {
 		return err
