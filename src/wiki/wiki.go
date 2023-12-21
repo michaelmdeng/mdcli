@@ -40,7 +40,7 @@ func Transform(inputDir string, outputDir string, template string, css string, f
 
 func Convert(input string, output string, template string, css string, force bool) error {
 	if force {
-		return pandocConvert(input, output, template, css)
+		return pandocConvert(input, output, template, css, "")
 	}
 
 	inputStat, err := os.Stat(input)
@@ -60,22 +60,38 @@ func Convert(input string, output string, template string, css string, force boo
 	}
 
 	if shouldConvert {
-		return pandocConvert(input, output, template, css)
+		return pandocConvert(input, output, template, css, "")
 	}
 
 	return nil
 }
 
-func pandocConvert(input string, output string, template string, css string) error {
+func convertTemp(input string, template string, css string) (string, error) {
+	output, err := tempHtmlOutputPath(input)
+	if err != nil {
+		return "", err
+	}
+
+	inputName := strings.TrimSuffix(path.Base(input), path.Ext(input))
+	err = pandocConvert(input, output, template, css, inputName)
+	if err != nil {
+		return "", err
+	}
+	return output, nil
+}
+
+func pandocConvert(input string, output string, template string, css string, title string) error {
 	fileNameExt := path.Base(output)
 	fileExt := path.Ext(output)
-	fileName := strings.TrimSuffix(fileNameExt, fileExt)
+	if title == "" {
+		title = strings.TrimSuffix(fileNameExt, fileExt)
+	}
 	err := cmd.RunCommand(
 		"pandoc", input,
 		"-r", "markdown",
 		"-w", "html",
 		"-o", output,
-		"--metadata", fmt.Sprintf("title=\"%v\"", fileName),
+		"--metadata", fmt.Sprintf("title=\"%v\"", title),
 		"--template", template,
 		"--css", css,
 		"--embed-resources",
