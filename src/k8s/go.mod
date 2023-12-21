@@ -1,6 +1,6 @@
 module github.com/mdcli/k8s
 
-go 1.21.1
+go 1.20
 
 replace github.com/mdcli/cmd => ../cmd
 

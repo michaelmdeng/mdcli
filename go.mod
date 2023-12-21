@@ -1,6 +1,6 @@
 module github.com/mdcli
 
-go 1.21.1
+go 1.20
 
 require (
 	github.com/mdcli/k8s v0.0.0-00010101000000-000000000000
