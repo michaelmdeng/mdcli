@@ -149,12 +149,6 @@ func openCommand() *cli.Command {
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
-			inputPath := cCtx.Args().First()
-			outputPath, err := HtmlOutputPath(inputPath)
-			if err != nil {
-				return err
-			}
-
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				return err
@@ -164,10 +158,31 @@ func openCommand() *cli.Command {
 			templatePath := cCtx.String("template")
 			templateAbsPath := path.Join(homeDir, templatePath)
 
-			err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cCtx.Bool("force"))
+			inputPath := cCtx.Args().First()
+			_, err = basePath(inputPath)
+			var outputPath string
 			if err != nil {
-				return err
+				outputPath, err = tempHtmlOutputPath(inputPath)
+				if err != nil {
+					return err
+				}
+
+				err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, true)
+				if err != nil {
+					return err
+				}
+			} else {
+				outputPath, err = HtmlOutputPath(inputPath)
+				if err != nil {
+					return err
+				}
+
+				err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cCtx.Bool("force"))
+				if err != nil {
+					return err
+				}
 			}
+
 			err = cmd.RunCommand(cCtx.String("browser"), outputPath)
 			if err != nil {
 				return err

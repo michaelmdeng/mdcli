@@ -159,3 +159,34 @@ func HtmlOutputPath(input string) (string, error) {
 
 	return outputPath, nil
 }
+
+func tempHtmlOutputPath(input string) (string, error) {
+	inputPath, err := filepath.Abs(input)
+	if err != nil {
+		return "", err
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	tmpDir := path.Join(homeDir, "tmp/mdcli")
+	err = os.MkdirAll(tmpDir, 0744)
+	if err != nil {
+		return "", err
+	}
+
+	inputName := strings.TrimSuffix(path.Base(inputPath), path.Ext(inputPath))
+	tmpFile, err := os.CreateTemp(tmpDir, fmt.Sprintf("%s-*.html", inputName))
+	if err != nil {
+		return "", err
+	}
+
+	err = tmpFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	return tmpFile.Name(), nil
+}
