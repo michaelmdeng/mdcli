@@ -162,12 +162,7 @@ func openCommand() *cli.Command {
 			_, err = basePath(inputPath)
 			var outputPath string
 			if err != nil {
-				outputPath, err = tempHtmlOutputPath(inputPath)
-				if err != nil {
-					return err
-				}
-
-				err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, true)
+				outputPath, err = convertTemp(inputPath, templateAbsPath, cssAbsPath)
 				if err != nil {
 					return err
 				}
