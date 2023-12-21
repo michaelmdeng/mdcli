@@ -22,3 +22,12 @@ func CaptureCommand(command string, args ...string) (string, error) {
 
 	return string(bytes), nil
 }
+
+func CaptureCmd(cmd exec.Cmd) (string, error) {
+	bytes, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), nil
+}
