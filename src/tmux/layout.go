@@ -30,6 +30,8 @@ var (
 	singlePanePattern = regexp.MustCompile(fmt.Sprintf("^%v,%v,%v", checksumPatternString, dimensionPatternString, `(?P<mainPaneId>\d+)`))
 	twoPanePattern    = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v,%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, `(?P<sidePaneId>\d+)`))
 	multiPanePattern  = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, sidePanesPatternString))
+
+	mainPaneWidthPercent = 0.67
 )
 
 type tmuxLayout struct {
@@ -143,7 +145,7 @@ func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
 }
 
 func defaultLayout(layout *baseLayout) (*tmuxLayout, error) {
-	mainWidth := int(math.Round(0.65 * float64(layout.width)))
+	mainWidth := int(math.Round(mainPaneWidthPercent * float64(layout.width)))
 	sideWidth := layout.width - mainWidth
 
 	if len(layout.sidePaneIds) == 0 {
