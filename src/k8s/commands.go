@@ -207,7 +207,10 @@ func k9sCommand() *cli.Command {
 			}
 
 			var trailArg string
-			if cCtx.Args().Len() == 1 {
+			if cCtx.Args().Len() == 2 && cCtx.Args().Get(0) == "get" {
+				trailArg = cCtx.Args().Get(1)
+				args = append(args, "-c", trailArg)
+			} else if cCtx.Args().Len() == 1 {
 				trailArg = cCtx.Args().Get(0)
 				args = append(args, "-c", trailArg)
 			} else if cCtx.Args().Len() == 0 {
@@ -266,7 +269,10 @@ func tidbK9sCommand() *cli.Command {
 			}
 
 			var trailArg string
-			if cCtx.Args().Len() == 1 {
+			if cCtx.Args().Len() == 2 && cCtx.Args().Get(0) == "get" {
+				trailArg = cCtx.Args().Get(1)
+				args = append(args, "-c", trailArg)
+			} else if cCtx.Args().Len() == 1 {
 				trailArg = cCtx.Args().Get(0)
 				args = append(args, "-c", trailArg)
 			} else if cCtx.Args().Len() == 0 {
