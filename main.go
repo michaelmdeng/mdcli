@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/mdcli/k8s"
+	"github.com/mdcli/tidb"
 	"github.com/mdcli/tmux"
 	"github.com/mdcli/wiki"
 	"github.com/urfave/cli/v2"
@@ -27,6 +28,7 @@ func main() {
 		Commands: []*cli.Command{
 			k8s.BaseCommand(),
 			wiki.BaseCommand(),
+			tidb.BaseCommand(),
 			tmux.BaseCommand(),
 		},
 	}

@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/mdcli/k8s v0.0.0-00010101000000-000000000000
+	github.com/mdcli/tidb v0.0.0-00010101000000-000000000000
 	github.com/mdcli/tmux v0.0.0-00010101000000-000000000000
 	github.com/mdcli/wiki v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v2 v2.25.0
@@ -25,5 +26,7 @@ replace github.com/mdcli/cmd => ./src/cmd
 replace github.com/mdcli/k8s => ./src/k8s
 
 replace github.com/mdcli/wiki => ./src/wiki
+
+replace github.com/mdcli/tidb => ./src/tidb
 
 replace github.com/mdcli/tmux => ./src/tmux
