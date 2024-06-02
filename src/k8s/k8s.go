@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -33,30 +32,6 @@ func isInferableCmd(cmd string) bool {
 func isEditableCmd(cmd string) bool {
 	_, ok := editableCmds[cmd]
 	return ok
-}
-
-func getConfirmation(s string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	numAttempts := 3
-	for i := 0; i < numAttempts; i++ {
-		fmt.Printf("%s [y/n]: ", s)
-
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			return false
-		}
-
-		response = strings.ToLower(strings.TrimSpace(response))
-
-		if response == "y" || response == "yes" {
-			return true
-		} else if response == "n" || response == "no" {
-			return false
-		}
-	}
-
-	return false
 }
 
 func noop(namespace string) string {
@@ -123,7 +98,7 @@ func getNamespaceInteractive(context string, pattern string) (string, error) {
 	return strings.TrimSpace(namespace), nil
 }
 
-func parseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
+func ParseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
 	if context != "" {
 		if ctx, ok := ContextsByAlias[context]; ok {
 			return ctx, nil
@@ -149,7 +124,7 @@ func parseContext(context string, interactive bool, pattern string, strict bool)
 	return context, nil
 }
 
-func parseNamespace(namespace string, allNamespaces bool, interactive bool, context string, pattern string, strict bool) (string, bool, error) {
+func ParseNamespace(namespace string, allNamespaces bool, interactive bool, context string, pattern string, strict bool) (string, bool, error) {
 	if allNamespaces || namespace == "*" {
 		return "", true, nil
 	}
@@ -180,16 +155,12 @@ func parseNamespace(namespace string, allNamespaces bool, interactive bool, cont
 	return namespace, false, nil
 }
 
-var NamespaceVariableAlias = "%n"
 var NamespaceVariableAliases = []string{"%n", "%ns"}
-var ContextVariableAlias = "%c"
 var ContextVariableAliases = []string{"%c", "%ctx"}
-var TidbClusterVariableAlias = "%tc"
 var TidbClusterVariableAliases = []string{"%tc", "%t"}
-var AZVariableAlias = "%z"
 var AZVariableAliases = []string{"%z", "%az"}
 
-func substituteAliases(args []string, context string, namespace string, ) []string {
+func substituteAliases(args []string, context string, namespace string) []string {
 	for i, arg := range args {
 		for _, alias := range NamespaceVariableAliases {
 			arg = strings.ReplaceAll(arg, alias, namespace)
