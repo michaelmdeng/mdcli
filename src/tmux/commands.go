@@ -6,27 +6,12 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const tmuxUsage = `Provides commands for manipulating custom tmux layouts.
-
-tmux provides the built-in main-vertical layout, which lays out one large pane
-on the left and the rest of the panes tiled vertically on the right. However,
-this layout divides horizontal space evenly between the left and right side.
-These commands provide a default pane layout that uses a 2:1 ratio for the left
-and right side, which allows an editor to lay out two full-width columns in the
-main left pane, essentially allowing three columns.
-
-While this default pane layout is suitable for wide screens, narrow screens
-often don't have enough horizontal real estate to support this layout. These
-commands support switching between a "pane-based" window layout, where all
-panes are layed out in a single window according to the default pane layout,
-and a "window-based" window layout, where the rest of the panes on the right
-side are moved to a dedicated window. This allows sessions to easily switch
-between narrow and wide screens.`
+const tmuxUsage = `Commands for manipulating custom tmux layouts.`
 
 func BaseCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "tmux",
-		Aliases: []string{"t"},
+		Aliases: []string{"tm", "tx"},
 		Usage:   tmuxUsage,
 		Subcommands: []*cli.Command{
 			layoutCommand(),

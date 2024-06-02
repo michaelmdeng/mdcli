@@ -7,6 +7,7 @@ import (
 
 func RunCommand(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
@@ -14,6 +15,8 @@ func RunCommand(command string, args ...string) error {
 
 func CaptureCommand(command string, args ...string) (string, error) {
 	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
 
 	bytes, err := cmd.Output()
 	if err != nil {

@@ -1,14 +1,63 @@
 package k8s
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/mdcli/cmd"
 )
+
+var (
+	inferableCmds = map[string] struct{}{
+		"exec": {},
+		"logs": {},
+		"port-forward": {},
+	}
+	editableCmds = map[string] struct{}{
+		"annotate": {},
+		"delete": {},
+		"patch": {},
+	}
+)
+
+func isInferableCmd(cmd string) bool {
+	_, ok := inferableCmds[cmd]
+	return ok
+}
+
+func isEditableCmd(cmd string) bool {
+	_, ok := editableCmds[cmd]
+	return ok
+}
+
+func getConfirmation(s string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	numAttempts := 3
+	for i := 0; i < numAttempts; i++ {
+		fmt.Printf("%s [y/n]: ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			return false
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
+
+	return false
+}
 
 func noop(namespace string) string {
 	return namespace
@@ -74,14 +123,18 @@ func getNamespaceInteractive(context string, pattern string) (string, error) {
 	return strings.TrimSpace(namespace), nil
 }
 
-func parseContext(context string, convertContext func(string) string, interactive bool, pattern string, strict bool) (string, error) {
+func parseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
 	if context != "" {
-		return convertContext(context), nil
+		if ctx, ok := ContextsByAlias[context]; ok {
+			return ctx, nil
+		} else {
+			return context, nil
+		}
 	}
 
 	if interactive && context == "" {
 		var err error
-		context, err = getContextInteractive("^m-tidb-")
+		context, err = getContextInteractive(pattern)
 		if strict && err != nil {
 			return "", err
 		} else if err != nil {
@@ -96,13 +149,18 @@ func parseContext(context string, convertContext func(string) string, interactiv
 	return context, nil
 }
 
-func parseNamespace(namespace string, convertNamespace func(string) string, allNamespaces bool, interactive bool, context string, pattern string, strict bool) (string, bool, error) {
+func parseNamespace(namespace string, allNamespaces bool, interactive bool, context string, pattern string, strict bool) (string, bool, error) {
 	if allNamespaces || namespace == "*" {
 		return "", true, nil
 	}
 
 	if namespace != "" {
-		namespace = convertNamespace(namespace)
+		ns, inferred := inferNamespace(context, namespace)
+		if inferred {
+			return ns, false, nil
+		} else {
+			return namespace, false, nil
+		}
 	}
 
 	if interactive && !allNamespaces && namespace == "" {
@@ -120,4 +178,108 @@ func parseNamespace(namespace string, convertNamespace func(string) string, allN
 	}
 
 	return namespace, false, nil
+}
+
+var NamespaceVariableAlias = "%n"
+var NamespaceVariableAliases = []string{"%n", "%ns"}
+var ContextVariableAlias = "%c"
+var ContextVariableAliases = []string{"%c", "%ctx"}
+var TidbClusterVariableAlias = "%tc"
+var TidbClusterVariableAliases = []string{"%tc", "%t"}
+var AZVariableAlias = "%z"
+var AZVariableAliases = []string{"%z", "%az"}
+
+func substituteAliases(args []string, context string, namespace string, ) []string {
+	for i, arg := range args {
+		for _, alias := range NamespaceVariableAliases {
+			arg = strings.ReplaceAll(arg, alias, namespace)
+		}
+		for _, alias := range ContextVariableAliases {
+			arg = strings.ReplaceAll(arg, alias, context)
+		}
+		for _, alias := range TidbClusterVariableAliases {
+			tc := strings.TrimPrefix(namespace, "tidb-")
+			arg = strings.ReplaceAll(arg, alias, tc)
+		}
+		for _, alias := range AZVariableAliases {
+			// parse zone from context
+			// ex. m-tidb-test-<zone>-ea1-us
+			pattern := regexp.MustCompile(`m-tidb-[a-z]+-([a-z])-ea1-us`)
+			matches := pattern.FindStringSubmatch(context)
+			if len(matches) >= 2 {
+				zone := matches[1]
+				if zone == "c" {
+					zone = "e"
+				}
+				az := fmt.Sprintf("us-east-1%s", zone)
+				arg = strings.ReplaceAll(arg, alias, az)
+			}
+		}
+		args[i] = arg
+	}
+	return args
+}
+
+func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assumeClusterAdmin bool, args []string) ([]string, bool) {
+	parsedArgs := substituteAliases(args, context, namespace)
+
+	output := make([]string, 0)
+	if context != "" {
+		output = append(output, "--context", context)
+	}
+
+	if namespace != "" {
+		output = append(output, "-n", namespace)
+	}
+
+	var edit bool
+	if isEditableCmd(args[0]) {
+		edit = true
+	}
+
+	output = append(output, parsedArgs...)
+
+	if allNamespaces {
+		output = append(output, "--all-namespaces")
+	}
+
+	if assumeClusterAdmin {
+		output = append(output, "--as=compute:cluster-admin")
+	}
+
+	return output, edit
+}
+
+func BuildK9sArgs(context string, namespace string, allNamespaces bool, args []string) ([]string, error) {
+	parsedArgs := substituteAliases(args, context, namespace)
+
+	output := make([]string, 0)
+	if context != "" {
+		output = append(output, "--context", context)
+	}
+
+	if namespace != "" {
+		output = append(output, "-n", namespace)
+	}
+
+	var trailArg string
+	if len(args) == 2 && args[0] == "get" {
+		trailArg = args[1]
+		args = append(args, "-c", trailArg)
+	} else if len(args) == 1 {
+		trailArg = args[0]
+		args = append(args, "-c", trailArg)
+	} else if len(args) == 0 {
+		// do nothing
+	} else {
+		return nil, errors.New(fmt.Sprintf("too many arguments provided to k9s: %s", strings.Join(args, " ")))
+	}
+
+	output = append(output, parsedArgs...)
+
+	if allNamespaces {
+		output = append(output, "--all-namespaces")
+	}
+
+	return output, nil
 }
