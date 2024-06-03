@@ -34,18 +34,6 @@ func isEditableCmd(cmd string) bool {
 	return ok
 }
 
-func noop(namespace string) string {
-	return namespace
-}
-
-func tidbContext(context string) string {
-	return fmt.Sprintf("m-tidb-%s-ea1-us", context)
-}
-
-func tidbNamespace(namespace string) string {
-	return fmt.Sprintf("tidb-%s", namespace)
-}
-
 func getContextInteractive(pattern string) (string, error) {
 	var contextCmd string
 	if len(pattern) > 0 {
