@@ -21,11 +21,47 @@ func BaseCommand() *cli.Command {
 		Aliases: []string{"ti", "tdb"},
 		Usage:   `Commands for managing TiDB`,
 		Subcommands: []*cli.Command{
+			tidbSecretCommand(),
 			tidbKubectlCommand(),
 			tidbK9sCommand(),
 			tidbMysqlCommand(),
 			tidbDmctlCommand(),
 			ticdcCommand(),
+		},
+	}
+}
+
+func tidbSecretCommand() *cli.Command {
+	return &cli.Command{
+		Name:    "tidbsecret",
+		Aliases: []string{"tsecret", "tpass", "pass", "secret", "password"},
+		Usage:   "Fetch tidb password",
+		Flags:  append(mdk8s.BaseK8sFlags),
+		Action: func(cCtx *cli.Context) error {
+			strict := cCtx.Bool("strict")
+			context := cCtx.String("context")
+			namespace := cCtx.String("namespace")
+			interactive := cCtx.Bool("interactive")
+			allNamespaces := cCtx.Bool("all-namespaces")
+
+			var err error
+			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			if err != nil {
+				return err
+			}
+
+			namespace, allNamespaces, err = mdk8s.ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
+			if err != nil {
+				return err
+			}
+
+			rootPass, err := getTidbSecret(context, namespace)
+			if err != nil {
+				return err
+			}
+
+			fmt.Print(rootPass)
+			return nil
 		},
 	}
 }
@@ -165,9 +201,7 @@ func tidbMysqlCommand() *cli.Command {
 				return err
 			}
 
-			args := make([]string, 0)
-			args = append(args, "kubectl", "--context", context, "--namespace", namespace, "get", "secret", "tidb-secret", "-o", "json", "|", "jq", "-r", "'.data.root'", "|", "base64", "-d", "|", "tr", "-d", "'\\n'")
-			rootPass, err := mdexec.CaptureCommand("bash", "-c", strings.Join(args, " "))
+			rootPass, err := getTidbSecret(context, namespace)
 			if err != nil {
 				return err
 			}
