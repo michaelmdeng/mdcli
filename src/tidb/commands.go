@@ -26,6 +26,7 @@ func BaseCommand() *cli.Command {
 			tidbK9sCommand(),
 			tidbMysqlCommand(),
 			tidbDmctlCommand(),
+			tidbPdctlCommand(),
 			ticdcCommand(),
 		},
 	}
@@ -310,6 +311,53 @@ func tidbDmctlCommand() *cli.Command {
 			dmctlCmd := fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
 
 			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
+			return mdexec.RunCommand("kubectl", execArgs...)
+		},
+	}
+}
+
+func tidbPdctlCommand() *cli.Command {
+	return &cli.Command{
+		Name:    "tidbpdctl",
+		Aliases: []string{"pdctl", "tpdctl"},
+		Usage:   "Connect to pdctl on a TiDB cluster",
+		Flags: append(append(mdk8s.BaseK8sFlags,
+			mdk8s.BaseKctlFlags...),
+			&cli.IntFlag{
+				Name:    "pod",
+				Aliases: []string{"p"},
+				Value:   0,
+				Usage:   "Pod number to connect to. Defaults to 0.",
+			},
+		),
+		Action: func(cCtx *cli.Context) error {
+			strict := cCtx.Bool("strict")
+			context := cCtx.String("context")
+			namespace := cCtx.String("namespace")
+			interactive := cCtx.Bool("interactive")
+			pod := cCtx.Int("pod")
+			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+
+			var err error
+			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			if err != nil {
+				return err
+			}
+
+			namespace, _, err = mdk8s.ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
+			if err != nil {
+				return err
+			}
+
+			clusterName := strings.TrimPrefix(namespace, "tidb-")
+			var podName, container, tlsPath string
+			podName = fmt.Sprintf("%s-pd-%d", clusterName, pod)
+			container = "pd"
+			tlsPath = "/var/lib/cluster-client-tls"
+
+			pdctlCmd := fmt.Sprintf(`./pd-ctl -u https://127.0.0.1:2379 --cert %s/tls.crt --key %s/tls.key --cacert %s/ca.crt -i`, tlsPath, tlsPath, tlsPath)
+
+			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
