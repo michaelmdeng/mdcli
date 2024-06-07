@@ -222,19 +222,17 @@ func BuildK9sArgs(context string, namespace string, allNamespaces bool, args []s
 	}
 
 	var trailArg string
-	if len(args) == 2 && args[0] == "get" {
-		trailArg = args[1]
-		args = append(args, "-c", trailArg)
-	} else if len(args) == 1 {
-		trailArg = args[0]
-		args = append(args, "-c", trailArg)
-	} else if len(args) == 0 {
+	if len(parsedArgs) == 2 && parsedArgs[0] == "get" {
+		trailArg = parsedArgs[1]
+		output = append(output, "-c", trailArg)
+	} else if len(parsedArgs) == 1 {
+		trailArg = parsedArgs[0]
+		output = append(output, "-c", trailArg)
+	} else if len(parsedArgs) == 0 {
 		// do nothing
 	} else {
 		return nil, errors.New(fmt.Sprintf("too many arguments provided to k9s: %s", strings.Join(args, " ")))
 	}
-
-	output = append(output, parsedArgs...)
 
 	if allNamespaces {
 		output = append(output, "--all-namespaces")
