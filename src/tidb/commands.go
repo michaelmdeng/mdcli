@@ -267,6 +267,12 @@ func tidbDmctlCommand() *cli.Command {
 				Value:   0,
 				Usage:   "Pod number to connect to. Defaults to 0.",
 			},
+			&cli.BoolFlag{
+				Name:    "worker",
+				Aliases: []string{"w"},
+				Value:   false,
+				Usage:   "Whether to connect to dm-worker. Defaults to false (dm-master).",
+			},
 		),
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
@@ -275,6 +281,7 @@ func tidbDmctlCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+			useWorker := cCtx.Bool("worker")
 
 			var err error
 			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
@@ -288,9 +295,21 @@ func tidbDmctlCommand() *cli.Command {
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
-			podName := fmt.Sprintf("%s-dm-master-%d", clusterName, pod)
+			var podName, container, tlsPath string
+			if useWorker {
+				podName = fmt.Sprintf("%s-dm-worker-%d", clusterName, pod)
+				container = "dm-worker"
+				tlsPath = "/var/lib/dm-worker-tls"
+			} else {
+				podName = fmt.Sprintf("%s-dm-master-%d", clusterName, pod)
+				container = "dm-master"
+				tlsPath = "/var/lib/dm-master-tls"
+			}
+			dmMasterEndpoint := fmt.Sprintf("https://%s-dm-master:8261", clusterName)
 
-			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "dm-master", "--", "bin/sh", "-c", `./dmctl --master-addr https://127.0.0.1:8261 --ssl-cert /var/lib/dm-master-tls/tls.crt --ssl-key /var/lib/dm-master-tls/tls.key --ssl-ca /var/lib/dm-master-tls/ca.crt`})
+			dmctlCmd := fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
+
+			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
