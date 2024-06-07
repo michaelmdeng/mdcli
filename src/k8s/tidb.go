@@ -215,6 +215,9 @@ var testNamespaceAliases = map[string][]string{
 	"tidb-dev-mdeng-test": {
 		"mdeng",
 	},
+	"tidb-release-production": {
+		"release",
+	},
 }
 
 var ProdNamespacesByAlias = make(map[string]string)

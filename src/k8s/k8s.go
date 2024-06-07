@@ -143,8 +143,9 @@ func ParseNamespace(namespace string, allNamespaces bool, interactive bool, cont
 	return namespace, false, nil
 }
 
-var NamespaceVariableAliases = []string{"%n", "%ns"}
-var ContextVariableAliases = []string{"%c", "%ctx"}
+// Order matters, parse longer aliases w/ common prefix first
+var NamespaceVariableAliases = []string{"%ns", "%n"}
+var ContextVariableAliases = []string{"%ctx", "%c"}
 var TidbClusterVariableAliases = []string{"%tc", "%t"}
 var AZVariableAliases = []string{"%z", "%az"}
 
