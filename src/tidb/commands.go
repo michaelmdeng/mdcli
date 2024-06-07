@@ -15,6 +15,15 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var BaseTidbFlags = []cli.Flag{
+	&cli.BoolFlag{
+		Name:    "disable-tls",
+		Aliases: []string{"tls"},
+		Value:   false,
+		Usage:   "Whether to disable TLS. Defaults to false.",
+	},
+}
+
 func BaseCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "tidb",
@@ -260,8 +269,8 @@ func tidbDmctlCommand() *cli.Command {
 		Name:    "tidbdmctl",
 		Aliases: []string{"dmctl", "tdmctl"},
 		Usage:   "Connect to dmctl on a TiDB cluster",
-		Flags: append(append(mdk8s.BaseK8sFlags,
-			mdk8s.BaseKctlFlags...),
+		Flags: append(append(append(mdk8s.BaseK8sFlags,
+			mdk8s.BaseKctlFlags...), BaseTidbFlags...),
 			&cli.IntFlag{
 				Name:    "pod",
 				Aliases: []string{"p"},
@@ -283,6 +292,7 @@ func tidbDmctlCommand() *cli.Command {
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			useWorker := cCtx.Bool("worker")
+			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
 			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
@@ -296,6 +306,7 @@ func tidbDmctlCommand() *cli.Command {
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
+
 			var podName, container, tlsPath string
 			if useWorker {
 				podName = fmt.Sprintf("%s-dm-worker-%d", clusterName, pod)
@@ -306,9 +317,15 @@ func tidbDmctlCommand() *cli.Command {
 				container = "dm-master"
 				tlsPath = "/var/lib/dm-master-tls"
 			}
-			dmMasterEndpoint := fmt.Sprintf("https://%s-dm-master:8261", clusterName)
 
-			dmctlCmd := fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
+			var dmMasterEndpoint, dmctlCmd string
+			if disableTls {
+				dmMasterEndpoint = fmt.Sprintf("http://%s-dm-master:8261", clusterName)
+				dmctlCmd = fmt.Sprintf(`./dmctl --master-addr %s `, dmMasterEndpoint)
+			} else {
+				dmMasterEndpoint = fmt.Sprintf("https://%s-dm-master:8261", clusterName)
+				dmctlCmd = fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
+			}
 
 			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
@@ -321,8 +338,8 @@ func tidbPdctlCommand() *cli.Command {
 		Name:    "tidbpdctl",
 		Aliases: []string{"pdctl", "tpdctl"},
 		Usage:   "Connect to pdctl on a TiDB cluster",
-		Flags: append(append(mdk8s.BaseK8sFlags,
-			mdk8s.BaseKctlFlags...),
+		Flags: append(append(append(mdk8s.BaseK8sFlags,
+			mdk8s.BaseKctlFlags...), BaseTidbFlags...),
 			&cli.IntFlag{
 				Name:    "pod",
 				Aliases: []string{"p"},
@@ -337,6 +354,7 @@ func tidbPdctlCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
 			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
@@ -350,12 +368,16 @@ func tidbPdctlCommand() *cli.Command {
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
-			var podName, container, tlsPath string
+			var pdctlCmd, podName, container, tlsPath string
 			podName = fmt.Sprintf("%s-pd-%d", clusterName, pod)
 			container = "pd"
-			tlsPath = "/var/lib/cluster-client-tls"
+			if disableTls {
+				pdctlCmd = "./pd-ctl -u http://127.0.0.1:2379 -i"
+			} else {
+				tlsPath = "/var/lib/cluster-client-tls"
 
-			pdctlCmd := fmt.Sprintf(`./pd-ctl -u https://127.0.0.1:2379 --cert %s/tls.crt --key %s/tls.key --cacert %s/ca.crt -i`, tlsPath, tlsPath, tlsPath)
+				pdctlCmd = fmt.Sprintf(`./pd-ctl -u https://127.0.0.1:2379 --cert %s/tls.crt --key %s/tls.key --cacert %s/ca.crt -i`, tlsPath, tlsPath, tlsPath)
+			}
 
 			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
@@ -368,8 +390,8 @@ func ticdcCommand() *cli.Command {
 		Name:    "ticdc",
 		Aliases: []string{"cdc"},
 		Usage:   "Execute cdc command on a TiDB cluster",
-		Flags: append(append(mdk8s.BaseK8sFlags,
-			mdk8s.BaseKctlFlags...),
+		Flags: append(append(append(mdk8s.BaseK8sFlags,
+			mdk8s.BaseKctlFlags...), BaseTidbFlags...),
 			&cli.IntFlag{
 				Name:    "pod",
 				Aliases: []string{"p"},
@@ -384,6 +406,7 @@ func ticdcCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
 			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
@@ -398,9 +421,16 @@ func ticdcCommand() *cli.Command {
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
 			podName := fmt.Sprintf("%s-ticdc-%d", clusterName, pod)
-			pdEndpoint := fmt.Sprintf("https://%s-pd:2379", clusterName)
+			var pdEndpoint, cdcCmd string
+			if disableTls {
+				pdEndpoint = fmt.Sprintf("http://%s-pd:2379", clusterName)
+				cdcCmd = fmt.Sprintf("./cdc cli --pd %s %s", pdEndpoint, strings.Join(cCtx.Args().Slice(), " "))
+			} else {
+				tlsPath := "/var/lib/cluster-client-tls"
+				pdEndpoint = fmt.Sprintf("https://%s-pd:2379", clusterName)
+				cdcCmd = fmt.Sprintf("./cdc cli --pd %s --cert %s/tls.crt --key %s/tls.key --ca %s/ca.crt %s", pdEndpoint, tlsPath, tlsPath, tlsPath, strings.Join(cCtx.Args().Slice(), " "))
+			}
 
-			cdcCmd := fmt.Sprintf("./cdc cli --pd %s --cert /var/lib/cluster-client-tls/tls.crt --key /var/lib/cluster-client-tls/tls.key --ca /var/lib/cluster-client-tls/ca.crt %s", pdEndpoint, strings.Join(cCtx.Args().Slice(), " "))
 			args, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "ticdc", "--", "bin/sh", "-c", cdcCmd})
 			return mdexec.RunCommand("kubectl", args...)
 		},
