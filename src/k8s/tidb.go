@@ -14,6 +14,7 @@ var contextAliases = map[string][]string{
 	},
 	"m-tidb-prod-c-ea1-us": {
 		"prodc",
+		"prode",
 	},
 	"m-tidb-stg-a-ea1-us": {
 		"stga",
@@ -24,6 +25,7 @@ var contextAliases = map[string][]string{
 	},
 	"m-tidb-stg-c-ea1-us": {
 		"stgc",
+		"stge",
 	},
 	"m-tidb-test-a-ea1-us": {
 		"testa",
@@ -34,6 +36,7 @@ var contextAliases = map[string][]string{
 	},
 	"m-tidb-test-c-ea1-us": {
 		"testc",
+		"teste",
 	},
 }
 
