@@ -218,7 +218,7 @@ func setWindowWindowLayout(session string, window string) error {
 			}
 		}
 
-		err = selectLayout(session, extraWindow, "tiled")
+		err = selectLayout(session, extraWindow, "even-vertical")
 		if err != nil {
 			return err
 		}
