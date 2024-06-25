@@ -217,7 +217,7 @@ func tidbMysqlCommand() *cli.Command {
 			}
 
 			if podName == "" {
-				podName = "%c-%z-tidb"
+				podName = "%tc-%az-tidb"
 			}
 			podName = fmt.Sprintf("%s-%d", podName,  pod)
 			portForwardCmd, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"port-forward", podName, fmt.Sprintf("%d:4000", port)})

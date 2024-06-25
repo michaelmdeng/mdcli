@@ -148,30 +148,57 @@ var NamespaceVariableAliases = []string{"%ns", "%n"}
 var ContextVariableAliases = []string{"%ctx", "%c"}
 var TidbClusterVariableAliases = []string{"%tc", "%t"}
 var AZVariableAliases = []string{"%z", "%az"}
+var AppVariableAliases = []string{"%app", "%ap"}
+
+func generateContextAlias(context string, namespace string) string {
+	return context
+}
+
+func generateNamespaceAlias(context string, namespace string) string {
+	return namespace
+}
+
+func generateTidbClusterAlias(context string, namespace string) string {
+	return strings.TrimPrefix(namespace, "tidb-")
+}
+
+func generateAppAlias(context string, namespace string) string {
+	return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(strings.TrimPrefix(namespace, "tidb-"), "-test"), "-stg"), "-prod")
+}
+
+func generateAZAlias(context string, namespace string) (string, error) {
+	// parse zone from context
+	// ex. m-tidb-test-<zone>-ea1-us
+	pattern := regexp.MustCompile(`m-tidb-[a-z]+-([a-z])-ea1-us`)
+	matches := pattern.FindStringSubmatch(context)
+	if len(matches) >= 2 {
+		zone := matches[1]
+		if zone == "c" {
+			zone = "e"
+		}
+		return fmt.Sprintf("us-east-1%s", zone), nil
+	} else {
+		return "", errors.New("Could not generate AZ alias")
+	}
+}
 
 func substituteAliases(args []string, context string, namespace string) []string {
 	for i, arg := range args {
 		for _, alias := range NamespaceVariableAliases {
-			arg = strings.ReplaceAll(arg, alias, namespace)
+			arg = strings.ReplaceAll(arg, alias, generateNamespaceAlias(context, namespace))
 		}
 		for _, alias := range ContextVariableAliases {
-			arg = strings.ReplaceAll(arg, alias, context)
+			arg = strings.ReplaceAll(arg, alias, generateContextAlias(context, namespace))
 		}
 		for _, alias := range TidbClusterVariableAliases {
-			tc := strings.TrimPrefix(namespace, "tidb-")
-			arg = strings.ReplaceAll(arg, alias, tc)
+			arg = strings.ReplaceAll(arg, alias, generateTidbClusterAlias(context, namespace))
+		}
+		for _, alias := range AppVariableAliases {
+			arg = strings.ReplaceAll(arg, alias, generateAppAlias(context, namespace))
 		}
 		for _, alias := range AZVariableAliases {
-			// parse zone from context
-			// ex. m-tidb-test-<zone>-ea1-us
-			pattern := regexp.MustCompile(`m-tidb-[a-z]+-([a-z])-ea1-us`)
-			matches := pattern.FindStringSubmatch(context)
-			if len(matches) >= 2 {
-				zone := matches[1]
-				if zone == "c" {
-					zone = "e"
-				}
-				az := fmt.Sprintf("us-east-1%s", zone)
+			az, err := generateAZAlias(context, namespace)
+			if err == nil {
 				arg = strings.ReplaceAll(arg, alias, az)
 			}
 		}
@@ -192,12 +219,23 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 		output = append(output, "-n", namespace)
 	}
 
+	kubectlCmd := args[0]
+
 	var edit bool
-	if isEditableCmd(args[0]) {
+	if isEditableCmd(kubectlCmd) {
 		edit = true
 	}
 
-	output = append(output, parsedArgs...)
+	var last int
+	for i, arg := range parsedArgs {
+		if arg != "--" {
+			output = append(output, arg)
+			last = i + 1
+		} else {
+			last = i
+			break
+		}
+	}
 
 	if allNamespaces {
 		output = append(output, "--all-namespaces")
@@ -205,6 +243,10 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 
 	if assumeClusterAdmin {
 		output = append(output, "--as=compute:cluster-admin")
+	}
+
+	for idx := last; idx < len(parsedArgs); idx++ {
+			output = append(output, parsedArgs[idx])
 	}
 
 	return output, edit
