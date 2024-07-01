@@ -28,7 +28,7 @@ func BaseCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "tidb",
 		Aliases: []string{"ti", "tdb"},
-		Usage:   `Commands for managing TiDB`,
+		Usage:   `Commands for managing TiDB on K8s`,
 		Subcommands: []*cli.Command{
 			tidbSecretCommand(),
 			tidbKubectlCommand(),
@@ -43,9 +43,9 @@ func BaseCommand() *cli.Command {
 
 func tidbSecretCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbsecret",
-		Aliases: []string{"tsecret", "tpass", "pass", "secret", "password"},
-		Usage:   "Fetch tidb password",
+		Name:    "secret",
+		Aliases: []string{"pass", "password"},
+		Usage:   "Fetch tidb root user password",
 		Flags:  append(mdk8s.BaseK8sFlags),
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
@@ -78,9 +78,9 @@ func tidbSecretCommand() *cli.Command {
 
 func tidbKubectlCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbkubectl",
-		Aliases: []string{"tk", "tkc", "tkctl"},
-		Usage:   "Custom kubectl wrapper for TiDB",
+		Name:    "kubectl",
+		Aliases: []string{"k", "kc", "kctl", "tk", "tkc", "tkctl"},
+		Usage:   "kubectl wrapper for TiDB",
 		Flags:  append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
@@ -123,9 +123,9 @@ func tidbKubectlCommand() *cli.Command {
 
 func tidbK9sCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbk9s",
+		Name:    "k9s",
 		Aliases: []string{"tk9s"},
-		Usage:   "Custom k9s wrapper for TiDB",
+		Usage:   "k9s wrapper for TiDB",
 		Flags: mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
@@ -164,8 +164,8 @@ func tidbK9sCommand() *cli.Command {
 
 func tidbMysqlCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbmysql",
-		Aliases: []string{"mysql", "tmysql"},
+		Name:    "mysql",
+		Aliases: []string{"tmysql"},
 		Usage:   "Connect to a TiDB via mysql client",
 		Flags: append(append(mdk8s.BaseK8sFlags,
 			mdk8s.BaseKctlFlags...),
@@ -266,8 +266,8 @@ func tidbMysqlCommand() *cli.Command {
 
 func tidbDmctlCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbdmctl",
-		Aliases: []string{"dmctl", "tdmctl"},
+		Name:    "dmctl",
+		Aliases: []string{"tdmctl"},
 		Usage:   "Connect to dmctl on a TiDB cluster",
 		Flags: append(append(append(mdk8s.BaseK8sFlags,
 			mdk8s.BaseKctlFlags...), BaseTidbFlags...),
@@ -335,8 +335,8 @@ func tidbDmctlCommand() *cli.Command {
 
 func tidbPdctlCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "tidbpdctl",
-		Aliases: []string{"pdctl", "tpdctl"},
+		Name:    "pdctl",
+		Aliases: []string{"tpdctl"},
 		Usage:   "Connect to pdctl on a TiDB cluster",
 		Flags: append(append(append(mdk8s.BaseK8sFlags,
 			mdk8s.BaseKctlFlags...), BaseTidbFlags...),
