@@ -107,6 +107,7 @@ var prodNamespaceAliases = map[string][]string{
 var stgNamespaceAliases = map[string][]string{
 	"tidb-mussel-stg-replace": {
 		"stgreplace",
+		"replace",
 	},
 	"tidb-mussel-stg": {
 		"stg",
@@ -160,32 +161,24 @@ var testNamespaceAliases = map[string][]string{
 		"rpfunc",
 	},
 	"tidb-rp-mussel-func-test-br-1": {
-		"rprestore1",
+		"rpfuncbr1",
 		"rpbr1",
 	},
 	"tidb-rp-mussel-func-test-br-2": {
 		"rprestore2",
 		"rpbr2",
 	},
-	"tidb-rp-mussel-func-test-br-3": {
-		"rprestore3",
-		"rpbr3",
-	},
 	"tidb-rp-func-test-2": {
 		"rp2",
 		"rpfunc2",
 	},
-	"tidb-rp-func-test-2-restore-1": {
-		"rp2restore1",
+	"tidb-rp-func-test-2-br-1": {
+		"rpfunc2br1",
 		"rp2br1",
 	},
-	"tidb-rp-func-test-2-restore-2": {
-		"rp2restore2",
+	"tidb-rp-func-test-2-br-2": {
+		"rpfunc2br2",
 		"rp2br2",
-	},
-	"tidb-rp-func-test-2-restore-3": {
-		"rp2restore3",
-		"rp2br3",
 	},
 	"tidb-rp-uds-func-test": {
 		"rpudsfunc",
