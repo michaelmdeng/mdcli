@@ -17,7 +17,14 @@ var (
 		"logs": {},
 		"port-forward": {},
 	}
-	editableCmds = map[string] struct{}{
+	confirmableCmds = map[string] struct{}{
+		"annotate": {},
+		"delete": {},
+		"patch": {},
+	}
+	editCmds = map[string] struct{}{
+		"exec": {},
+		"port-forward": {},
 		"annotate": {},
 		"delete": {},
 		"patch": {},
@@ -29,8 +36,13 @@ func isInferableCmd(cmd string) bool {
 	return ok
 }
 
-func isEditableCmd(cmd string) bool {
-	_, ok := editableCmds[cmd]
+func isConfirmableCmd(cmd string) bool {
+	_, ok := confirmableCmds[cmd]
+	return ok
+}
+
+func isEditCmd(cmd string) bool {
+	_, ok := editCmds[cmd]
 	return ok
 }
 
@@ -221,9 +233,9 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 
 	kubectlCmd := args[0]
 
-	var edit bool
-	if isEditableCmd(kubectlCmd) {
-		edit = true
+	var confirm bool
+	if isConfirmableCmd(kubectlCmd) {
+		confirm = true
 	}
 
 	var last int
@@ -241,7 +253,7 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 		output = append(output, "--all-namespaces")
 	}
 
-	if assumeClusterAdmin {
+	if assumeClusterAdmin && isEditCmd(kubectlCmd) {
 		output = append(output, "--as=compute:cluster-admin")
 	}
 
@@ -249,7 +261,7 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 			output = append(output, parsedArgs[idx])
 	}
 
-	return output, edit
+	return output, confirm
 }
 
 func BuildK9sArgs(context string, namespace string, allNamespaces bool, args []string) ([]string, error) {
