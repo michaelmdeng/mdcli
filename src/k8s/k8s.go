@@ -12,22 +12,36 @@ import (
 )
 
 var (
-	inferableCmds = map[string] struct{}{
+	inferableCmds = map[string]struct{} {
 		"exec": {},
 		"logs": {},
 		"port-forward": {},
 	}
-	confirmableCmds = map[string] struct{}{
+	confirmableCmds = map[string]struct{} {
 		"annotate": {},
 		"delete": {},
 		"patch": {},
 	}
-	editCmds = map[string] struct{}{
+	editCmds = map[string]struct{} {
 		"exec": {},
 		"port-forward": {},
 		"annotate": {},
 		"delete": {},
 		"patch": {},
+	}
+	resourceModifiableCmds = map[string]struct{} {
+		"exec": {},
+		"logs": {},
+		"port-forward": {},
+	}
+	modifiableResources = map[string]struct{} {
+		"deploy": {},
+		"deployment": {},
+		"statefulset": {},
+		"sts": {},
+		"service": {},
+		"svc": {},
+		"job": {},
 	}
 )
 
@@ -43,6 +57,16 @@ func isConfirmableCmd(cmd string) bool {
 
 func isEditCmd(cmd string) bool {
 	_, ok := editCmds[cmd]
+	return ok
+}
+
+func isResourceModifiableCmd(cmd string) bool {
+	_, ok := resourceModifiableCmds[cmd]
+	return ok
+}
+
+func isModifiableResource(resource string) bool {
+	_, ok := modifiableResources[resource]
 	return ok
 }
 
@@ -238,8 +262,28 @@ func BuildKubectlArgs(context string, namespace string, allNamespaces bool, assu
 		confirm = true
 	}
 
+	var resourceModified bool
+	var resourceType, resourceName string
+	if isResourceModifiableCmd(kubectlCmd) {
+		resourceType = args[1]
+		if isModifiableResource(resourceType) {
+			resourceName = args[2]
+			resourceModified = true
+		}
+	}
+
 	var last int
 	for i, arg := range parsedArgs {
+		if resourceModified {
+			last = i + 1
+			if i == 1 {
+				output = append(output, fmt.Sprintf("%s/%s", resourceType, resourceName))
+				continue
+			} else if i == 2 {
+				continue
+			}
+		}
+
 		if arg != "--" {
 			output = append(output, arg)
 			last = i + 1
