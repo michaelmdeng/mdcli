@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/bitfield/script"
-	mdk8s "github.com/mdcli/k8s"
 	mdexec "github.com/mdcli/cmd"
+	"github.com/mdcli/config"
+	mdk8s "github.com/mdcli/k8s"
 	"github.com/urfave/cli/v2"
 )
 
@@ -83,6 +84,8 @@ func tidbKubectlCommand() *cli.Command {
 		Usage:   "kubectl wrapper for TiDB",
 		Flags:  append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
 		Action: func(cCtx *cli.Context) error {
+			cfg := config.NewConfig()
+
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
@@ -102,6 +105,9 @@ func tidbKubectlCommand() *cli.Command {
 				return err
 			}
 
+			if isTestTidbContext(context) {
+				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
+			}
 			args, confirm := mdk8s.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
 
 			if dryRun {
@@ -187,6 +193,8 @@ func tidbMysqlCommand() *cli.Command {
 			},
 		),
 		Action: func(cCtx *cli.Context) error {
+			cfg := config.NewConfig()
+
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
@@ -216,6 +224,9 @@ func tidbMysqlCommand() *cli.Command {
 				return err
 			}
 
+			if isTestTidbContext(context) {
+				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
+			}
 			if podName == "" {
 				podName = "%tc-%az-tidb"
 			}
@@ -285,6 +296,8 @@ func tidbDmctlCommand() *cli.Command {
 			},
 		),
 		Action: func(cCtx *cli.Context) error {
+			cfg := config.NewConfig()
+
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
@@ -327,6 +340,9 @@ func tidbDmctlCommand() *cli.Command {
 				dmctlCmd = fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
 			}
 
+			if isTestTidbContext(context) {
+				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
+			}
 			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
@@ -348,6 +364,8 @@ func tidbPdctlCommand() *cli.Command {
 			},
 		),
 		Action: func(cCtx *cli.Context) error {
+			cfg := config.NewConfig()
+
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
@@ -379,6 +397,9 @@ func tidbPdctlCommand() *cli.Command {
 				pdctlCmd = fmt.Sprintf(`./pd-ctl -u https://127.0.0.1:2379 --cert %s/tls.crt --key %s/tls.key --cacert %s/ca.crt -i`, tlsPath, tlsPath, tlsPath)
 			}
 
+			if isTestTidbContext(context) {
+				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
+			}
 			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
@@ -400,6 +421,8 @@ func ticdcCommand() *cli.Command {
 			},
 		),
 		Action: func(cCtx *cli.Context) error {
+			cfg := config.NewConfig()
+
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
@@ -431,6 +454,9 @@ func ticdcCommand() *cli.Command {
 				cdcCmd = fmt.Sprintf("./cdc cli --pd %s --cert %s/tls.crt --key %s/tls.key --ca %s/ca.crt %s", pdEndpoint, tlsPath, tlsPath, tlsPath, strings.Join(cCtx.Args().Slice(), " "))
 			}
 
+			if isTestTidbContext(context) {
+				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
+			}
 			args, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "ticdc", "--", "bin/sh", "-c", cdcCmd})
 			return mdexec.RunCommand("kubectl", args...)
 		},
