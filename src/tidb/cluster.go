@@ -2,6 +2,8 @@ package tidb
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"strings"
 
 	mdk8s "github.com/mdcli/k8s"
@@ -314,4 +316,57 @@ func ParseNamespace(namespace string, allNamespaces bool, interactive bool, cont
 	}
 
 	return namespace, false, nil
+}
+
+var (
+	TidbClusterSubstitution = mdk8s.Substitution{
+		Aliases: []string{
+			"tc",
+			"t",
+		},
+		Generate: func(context, namespace string) (string, error) {
+			return strings.TrimPrefix(namespace, "tidb-"), nil
+		},
+	}
+
+	AzSubstitution = mdk8s.Substitution{
+		Aliases: []string{
+			"az",
+			"z",
+		},
+		Generate: func(context, namespace string) (string, error) {
+			// parse zone from context
+			// ex. m-tidb-test-<zone>-ea1-us
+			pattern := regexp.MustCompile(`m-tidb-[a-z]+-([a-z])-ea1-us`)
+			matches := pattern.FindStringSubmatch(context)
+			if len(matches) >= 2 {
+				zone := matches[1]
+				if zone == "c" {
+					zone = "e"
+				}
+				return fmt.Sprintf("us-east-1%s", zone), nil
+			} else {
+				return "", errors.New("Could not generate AZ alias")
+			}
+		},
+	}
+
+	AppSubstitution = mdk8s.Substitution{
+		Aliases: []string{
+			"app",
+			"ap",
+		},
+		Generate: func(context, namespace string) (string, error) {
+			return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(strings.TrimPrefix(namespace, "tidb-"), "-test"), "-stg"), "-prod"), nil
+		},
+	}
+)
+
+func NewTidbKubeBuilder() mdk8s.KubeBuilder {
+	substitutions := []mdk8s.Substitution{
+		TidbClusterSubstitution,
+		AzSubstitution,
+		AppSubstitution,
+	}
+	return mdk8s.NewKubeBuilderWithSubstitutions(substitutions)
 }
