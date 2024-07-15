@@ -108,7 +108,8 @@ func tidbKubectlCommand() *cli.Command {
 			if isTestTidbContext(context) {
 				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
 			}
-			args, confirm := mdk8s.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
+			builder := NewTidbKubeBuilder()
+			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
 
 			if dryRun {
 				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
@@ -152,7 +153,8 @@ func tidbK9sCommand() *cli.Command {
 				return err
 			}
 
-			args, err := mdk8s.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
+			builder := NewTidbKubeBuilder()
+			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
 			if err != nil {
 				return err
 			}
@@ -231,7 +233,8 @@ func tidbMysqlCommand() *cli.Command {
 				podName = "%tc-%az-tidb"
 			}
 			podName = fmt.Sprintf("%s-%d", podName,  pod)
-			portForwardCmd, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"port-forward", podName, fmt.Sprintf("%d:4000", port)})
+			builder := NewTidbKubeBuilder()
+			portForwardCmd, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"port-forward", podName, fmt.Sprintf("%d:4000", port)})
 			cmd := exec.Command("kubectl", portForwardCmd...)
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
@@ -343,7 +346,8 @@ func tidbDmctlCommand() *cli.Command {
 			if isTestTidbContext(context) {
 				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
 			}
-			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
+			builder := NewTidbKubeBuilder()
+			execArgs, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
@@ -400,7 +404,8 @@ func tidbPdctlCommand() *cli.Command {
 			if isTestTidbContext(context) {
 				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
 			}
-			execArgs, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
+			builder := NewTidbKubeBuilder()
+			execArgs, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
@@ -457,7 +462,8 @@ func ticdcCommand() *cli.Command {
 			if isTestTidbContext(context) {
 				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
 			}
-			args, _ := mdk8s.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "ticdc", "--", "bin/sh", "-c", cdcCmd})
+			builder := NewTidbKubeBuilder()
+			args, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "ticdc", "--", "bin/sh", "-c", cdcCmd})
 			return mdexec.RunCommand("kubectl", args...)
 		},
 	}

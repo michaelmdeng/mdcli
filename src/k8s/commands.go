@@ -109,7 +109,8 @@ func kubectlCommand() *cli.Command {
 				return err
 			}
 
-			args, confirm := BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
+			builder := NewKubeBuilder()
+			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
 			if dryRun {
 				fmt.Println(fmt.Sprintf("%s %s", Kubectl, strings.Join(args, " ")))
 				return nil
@@ -151,7 +152,8 @@ func k9sCommand() *cli.Command {
 				return err
 			}
 
-			args, err := BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
+			builder := NewKubeBuilder()
+			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
 			if err != nil {
 				return err
 			}
