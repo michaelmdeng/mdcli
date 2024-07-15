@@ -57,11 +57,11 @@ func (b *KubeBuilder) substitute(args []string, context, namespace string) []str
 		for _, sub := range b.Substitutions {
 			for _, alias := range sub.Aliases {
 				substition, err := sub.Generate(context, namespace)
-				if err == nil {
+				if err != nil {
 					continue
 				}
 
-				arg = strings.ReplaceAll(arg, alias, substition)
+				arg = strings.ReplaceAll(arg, fmt.Sprintf("%%%s", alias), substition)
 			}
 		}
 
