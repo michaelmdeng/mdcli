@@ -70,7 +70,7 @@ func isModifiableResource(resource string) bool {
 	return ok
 }
 
-func getContextInteractive(pattern string) (string, error) {
+func GetContextInteractive(pattern string) (string, error) {
 	var contextCmd string
 	if len(pattern) > 0 {
 		contextCmd = fmt.Sprintf("yq eval '.contexts[].name' /Users/michael_deng/.kube/config | grep -e \"%s\"", pattern)
@@ -94,7 +94,7 @@ func getContextInteractive(pattern string) (string, error) {
 	return strings.TrimSpace(context), nil
 }
 
-func getNamespaceInteractive(context string, pattern string) (string, error) {
+func GetNamespaceInteractive(context string, pattern string) (string, error) {
 	var namespaceCmd string
 	if context == "" {
 		namespaceCmd = "kubectl get ns -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}{end}'"
@@ -124,16 +124,12 @@ func getNamespaceInteractive(context string, pattern string) (string, error) {
 
 func ParseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
 	if context != "" {
-		if ctx, ok := ContextsByAlias[context]; ok {
-			return ctx, nil
-		} else {
-			return context, nil
-		}
+		return context, nil
 	}
 
 	if interactive && context == "" {
 		var err error
-		context, err = getContextInteractive(pattern)
+		context, err = GetContextInteractive(pattern)
 		if strict && err != nil {
 			return "", err
 		} else if err != nil {
@@ -154,17 +150,12 @@ func ParseNamespace(namespace string, allNamespaces bool, interactive bool, cont
 	}
 
 	if namespace != "" {
-		ns, inferred := inferNamespace(context, namespace)
-		if inferred {
-			return ns, false, nil
-		} else {
-			return namespace, false, nil
-		}
+		return namespace, false, nil
 	}
 
 	if interactive && !allNamespaces && namespace == "" {
 		var err error
-		namespace, err = getNamespaceInteractive(context, pattern)
+		namespace, err = GetNamespaceInteractive(context, pattern)
 		if strict && err != nil {
 			return "", false, err
 		} else if err != nil {

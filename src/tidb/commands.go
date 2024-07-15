@@ -56,12 +56,12 @@ func tidbSecretCommand() *cli.Command {
 			allNamespaces := cCtx.Bool("all-namespaces")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, allNamespaces, err = mdk8s.ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
+			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -95,12 +95,12 @@ func tidbKubectlCommand() *cli.Command {
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, allNamespaces, err = mdk8s.ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
+			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -142,12 +142,12 @@ func tidbK9sCommand() *cli.Command {
 			allNamespaces := cCtx.Bool("all-namespaces")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, allNamespaces, err = mdk8s.ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
+			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -209,12 +209,12 @@ func tidbMysqlCommand() *cli.Command {
 			}
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, _, err = mdk8s.ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
+			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -308,12 +308,12 @@ func tidbDmctlCommand() *cli.Command {
 			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, _, err = mdk8s.ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
+			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -375,12 +375,12 @@ func tidbPdctlCommand() *cli.Command {
 			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, _, err = mdk8s.ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
+			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
@@ -432,12 +432,12 @@ func ticdcCommand() *cli.Command {
 			disableTls := cCtx.Bool("disable-tls")
 
 			var err error
-			context, err = mdk8s.ParseContext(context, interactive, "^m-tidb-", strict)
+			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
 				return err
 			}
 
-			namespace, _, err = mdk8s.ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
+			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return err
 			}
