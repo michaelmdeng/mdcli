@@ -1,7 +1,10 @@
-package k8s
+package tidb
 
 import (
+	"errors"
 	"strings"
+
+	mdk8s "github.com/mdcli/k8s"
 )
 
 var contextAliases = map[string][]string{
@@ -220,6 +223,16 @@ var ProdNamespacesByAlias = make(map[string]string)
 var StgNamespacesByAlias = make(map[string]string)
 var TestNamespacesByAlias = make(map[string]string)
 
+func inferContext(contextAlias string) (string, bool) {
+	contextAlias = strings.ReplaceAll(strings.ToLower(contextAlias), "-", "")
+
+	if context, ok := ContextsByAlias[contextAlias]; ok {
+		return context, true
+	}
+
+	return contextAlias, false
+}
+
 func inferNamespace(context string, namespaceAlias string) (string, bool) {
 	namespaceAlias = strings.ReplaceAll(strings.ToLower(namespaceAlias), "-", "")
 
@@ -251,4 +264,54 @@ func inferNamespace(context string, namespaceAlias string) (string, bool) {
 	}
 
 	return namespaceAlias, false
+}
+
+func ParseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
+	if context != "" {
+		context, _ = inferContext(context)
+		return context, nil
+	}
+
+	if interactive && context == "" {
+		var err error
+		context, err = mdk8s.GetContextInteractive(pattern)
+		if strict && err != nil {
+			return "", err
+		} else if err != nil {
+			context = ""
+		}
+	}
+
+	if strict && context == "" {
+		return "", errors.New("context must be specified in strict mode")
+	}
+
+	return context, nil
+}
+
+func ParseNamespace(namespace string, allNamespaces bool, interactive bool, context string, pattern string, strict bool) (string, bool, error) {
+	if allNamespaces || namespace == "*" {
+		return "", true, nil
+	}
+
+	if namespace != "" {
+		namespace, _ = inferNamespace(context, namespace)
+		return namespace, false, nil
+	}
+
+	if interactive && !allNamespaces && namespace == "" {
+		var err error
+		namespace, err = mdk8s.GetNamespaceInteractive(context, pattern)
+		if strict && err != nil {
+			return "", false, err
+		} else if err != nil {
+			namespace = ""
+		}
+	}
+
+	if strict && namespace == "" {
+		return "", false, errors.New("namespace must be specified in strict mode")
+	}
+
+	return namespace, false, nil
 }
