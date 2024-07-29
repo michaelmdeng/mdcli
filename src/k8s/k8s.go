@@ -18,15 +18,21 @@ var (
 	}
 	confirmableCmds = map[string]struct{} {
 		"annotate": {},
+		"apply": {},
 		"delete": {},
 		"patch": {},
+		"rollout": {},
 	}
 	editCmds = map[string]struct{} {
-		"exec": {},
-		"port-forward": {},
 		"annotate": {},
+		"apply": {},
+		"cp": {},
 		"delete": {},
+		"edit": {},
+		"exec": {},
 		"patch": {},
+		"port-forward": {},
+		"rollout": {},
 	}
 	resourceModifiableCmds = map[string]struct{} {
 		"exec": {},
