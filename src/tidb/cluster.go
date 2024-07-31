@@ -225,18 +225,18 @@ var ProdNamespacesByAlias = make(map[string]string)
 var StgNamespacesByAlias = make(map[string]string)
 var TestNamespacesByAlias = make(map[string]string)
 
-func inferContext(contextAlias string) (string, bool) {
-	contextAlias = strings.ReplaceAll(strings.ToLower(contextAlias), "-", "")
+func inferContext(kubecontext string) (string, bool) {
+	contextAlias := strings.ReplaceAll(strings.ToLower(kubecontext), "-", "")
 
 	if context, ok := ContextsByAlias[contextAlias]; ok {
 		return context, true
 	}
 
-	return contextAlias, false
+	return kubecontext, false
 }
 
-func inferNamespace(context string, namespaceAlias string) (string, bool) {
-	namespaceAlias = strings.ReplaceAll(strings.ToLower(namespaceAlias), "-", "")
+func inferNamespace(context string, namespace string) (string, bool) {
+	namespaceAlias := strings.ReplaceAll(strings.ToLower(namespace), "-", "")
 
 	var env string
 	if strings.Contains(context, "prod") {
@@ -248,7 +248,7 @@ func inferNamespace(context string, namespaceAlias string) (string, bool) {
 	} else if strings.Contains(context, "dev") {
 		env = "test"
 	} else {
-		return namespaceAlias, false
+		return namespace, false
 	}
 
 	if env == "prod" {
@@ -265,7 +265,7 @@ func inferNamespace(context string, namespaceAlias string) (string, bool) {
 		}
 	}
 
-	return namespaceAlias, false
+	return namespace, false
 }
 
 func ParseContext(context string, interactive bool, pattern string, strict bool) (string, error) {
