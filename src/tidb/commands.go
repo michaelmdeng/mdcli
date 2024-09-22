@@ -90,9 +90,10 @@ func tidbKubectlCommand() *cli.Command {
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
 			interactive := cCtx.Bool("interactive")
-			dryRun := cCtx.Bool("dryrun")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 			allNamespaces := cCtx.Bool("all-namespaces")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+			confirmed := cCtx.Bool("yes")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -111,11 +112,12 @@ func tidbKubectlCommand() *cli.Command {
 			builder := NewTidbKubeBuilder()
 			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
 
-			if dryRun {
+			needsConfirm := confirm && !confirmed
+			if debug || needsConfirm {
 				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
-				return nil
-			} else if confirm {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+			}
+
+			if needsConfirm {
 				res := mdexec.GetConfirmation("Do you want to execute the above command?")
 				if !res {
 					fmt.Println("Command canceled")
@@ -139,7 +141,7 @@ func tidbK9sCommand() *cli.Command {
 			context := cCtx.String("context")
 			namespace := cCtx.String("namespace")
 			interactive := cCtx.Bool("interactive")
-			dryRun := cCtx.Bool("dryrun")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 			allNamespaces := cCtx.Bool("all-namespaces")
 
 			var err error
@@ -159,9 +161,8 @@ func tidbK9sCommand() *cli.Command {
 				return err
 			}
 
-			if dryRun {
+			if debug {
 				fmt.Println(fmt.Sprintf("%s %s", mdk8s.K9s, strings.Join(args, " ")))
-				return nil
 			}
 
 			_, err = script.Exec(fmt.Sprintf("%s %s", mdk8s.K9s, strings.Join(args, " "))).Stdout()
@@ -204,6 +205,7 @@ func tidbMysqlCommand() *cli.Command {
 			pod := cCtx.Int("pod")
 			podName := cCtx.String("pod-name")
 			port := cCtx.Int("port")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 
 			if port == -1 {
@@ -249,6 +251,10 @@ func tidbMysqlCommand() *cli.Command {
 				}
 			}()
 
+			if debug {
+				fmt.Println(fmt.Sprintf("%s %s", "kubectl", strings.Join(portForwardCmd, " ")))
+			}
+
 			portForwardErr := make(chan error)
 			go func() {
 				fmt.Println(fmt.Sprintf("Starting port-forward from %s:4000 to %d", podName, port))
@@ -265,7 +271,14 @@ func tidbMysqlCommand() *cli.Command {
 			default:
 			}
 
-			mysqlCmd := exec.Command("mysql", "-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-p" + rootPass, "--prompt=tidb> ")
+			mysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-p" + rootPass, "--prompt=tidb> "}
+			redactedMysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-pPASS" , "--prompt=tidb> "}
+
+			if debug {
+				fmt.Println(fmt.Sprintf("%s %s", "mysql", strings.Join(redactedMysqlArgs, " ")))
+			}
+
+			mysqlCmd := exec.Command("mysql", mysqlArgs...)
 			mysqlCmd.Stdin = os.Stdin
 			mysqlCmd.Stdout = os.Stdout
 			mysqlCmd.Stderr = os.Stderr
@@ -309,6 +322,7 @@ func tidbDmctlCommand() *cli.Command {
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			useWorker := cCtx.Bool("worker")
 			disableTls := cCtx.Bool("disable-tls")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -348,6 +362,11 @@ func tidbDmctlCommand() *cli.Command {
 			}
 			builder := NewTidbKubeBuilder()
 			execArgs, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", dmctlCmd})
+
+			if debug {
+				fmt.Println(fmt.Sprintf("%s %s", "kubectl", strings.Join(execArgs, " ")))
+			}
+
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
@@ -377,6 +396,7 @@ func tidbPdctlCommand() *cli.Command {
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			disableTls := cCtx.Bool("disable-tls")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -406,6 +426,11 @@ func tidbPdctlCommand() *cli.Command {
 			}
 			builder := NewTidbKubeBuilder()
 			execArgs, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", container, "--", "bin/sh", "-c", pdctlCmd})
+
+			if debug {
+				fmt.Println(fmt.Sprintf("%s %s", "kubectl", strings.Join(execArgs, " ")))
+			}
+
 			return mdexec.RunCommand("kubectl", execArgs...)
 		},
 	}
@@ -435,6 +460,7 @@ func ticdcCommand() *cli.Command {
 			pod := cCtx.Int("pod")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			disableTls := cCtx.Bool("disable-tls")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -464,6 +490,11 @@ func ticdcCommand() *cli.Command {
 			}
 			builder := NewTidbKubeBuilder()
 			args, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"exec", "-it", podName, "-c", "ticdc", "--", "bin/sh", "-c", cdcCmd})
+
+			if debug {
+				fmt.Println(fmt.Sprintf("%s %s", "kubectl", strings.Join(args, " ")))
+			}
+
 			return mdexec.RunCommand("kubectl", args...)
 		},
 	}
