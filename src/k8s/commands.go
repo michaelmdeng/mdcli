@@ -43,10 +43,10 @@ var BaseK8sFlags = []cli.Flag{
 		Usage:   "Enable interactive mode to select context and namespace if not provided",
 	},
 	&cli.BoolFlag{
-		Name:    "dryrun",
+		Name:    "debug",
 		Aliases: []string{"d"},
 		Value:   false,
-		Usage:   "Enable dry-run mode to show the command to run",
+		Usage:   "Preview the actual command to be executed",
 	},
 	&cli.BoolFlag{
 		Name:    "all-namespaces",

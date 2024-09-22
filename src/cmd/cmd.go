@@ -3,10 +3,9 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"strings"
-
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func RunCommand(command string, args ...string) error {
@@ -63,3 +62,24 @@ func GetConfirmation(s string) bool {
 	return false
 }
 
+func IsPipe() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		return true
+	}
+
+	fi, err = os.Stdout.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		return true
+	}
+
+	return false
+}
