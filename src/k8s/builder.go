@@ -82,6 +82,10 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 		output = append(output, "-n", namespace)
 	}
 
+	if len(args) == 0 {
+		return output, false
+	}
+
 	kubectlCmd := args[0]
 
 	var confirm bool
