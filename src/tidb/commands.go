@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bitfield/script"
+	"github.com/fatih/color"
 	mdexec "github.com/mdcli/cmd"
 	"github.com/mdcli/config"
 	mdk8s "github.com/mdcli/k8s"
@@ -114,7 +115,15 @@ func tidbKubectlCommand() *cli.Command {
 
 			needsConfirm := confirm && !confirmed
 			if debug || needsConfirm {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				if isProdTidbContext(context) {
+					color.Red(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				} else if isStgTidbContext(context) {
+					color.Yellow(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				} else if isTestTidbContext(context) {
+					color.Magenta(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				} else {
+					fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				}
 			}
 
 			if needsConfirm {
@@ -355,6 +364,11 @@ func tidbDmctlCommand() *cli.Command {
 			} else {
 				dmMasterEndpoint = fmt.Sprintf("https://%s-dm-master:8261", clusterName)
 				dmctlCmd = fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
+			}
+
+			if len(cCtx.Args().Slice()) > 0 {
+				dmctlCmd += " "
+				dmctlCmd += strings.Join(cCtx.Args().Slice(), " ")
 			}
 
 			if isTestTidbContext(context) {

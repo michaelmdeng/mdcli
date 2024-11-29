@@ -114,9 +114,15 @@ var stgNamespaceAliases = map[string][]string{
 		"stgreplace",
 		"replace",
 	},
+	"tidb-mussel-stg-replace-dr": {
+		"replacedr",
+	},
 	"tidb-mussel-stg": {
 		"stg",
 		"merge",
+	},
+	"tidb-mussel-stg-dr": {
+		"mergedr",
 	},
 	"tidb-restore-operator-stg": {
 		"restore",
@@ -129,6 +135,14 @@ var stgNamespaceAliases = map[string][]string{
 	"tidb-uds-full-shadow-stg": {
 		"udsfullshadow",
 		"fullshadow",
+	},
+	"tidb-uds-full-shadow-stg-br-1": {
+		"udsfullshadowbr1",
+		"fullshadowbr1",
+	},
+	"tidb-uds-full-shadow-stg-br-2": {
+		"udsfullshadowbr2",
+		"fullshadowbr2",
 	},
 	"tidb-uds-shadow-stg": {
 		"udsshadow",
@@ -164,6 +178,8 @@ var testNamespaceAliases = map[string][]string{
 	"tidb-rp-mussel-func-test": {
 		"rp",
 		"rpfunc",
+		"rpmussfunc",
+		"rpmusselfunc",
 	},
 	"tidb-rp-mussel-func-test-br-1": {
 		"rpfuncbr1",
@@ -188,6 +204,14 @@ var testNamespaceAliases = map[string][]string{
 	"tidb-rp-uds-func-test": {
 		"rpudsfunc",
 		"udsfunc",
+	},
+	"tidb-rp-uds-func-test-br-1": {
+		"rpudsfuncbr1",
+		"udsfuncbr1",
+	},
+	"tidb-rp-uds-func-test-br-2": {
+		"rpudsfuncbr2",
+		"udsfuncbr2",
 	},
 	"tidb-rp-uds-load-test": {
 		"rpudsload",

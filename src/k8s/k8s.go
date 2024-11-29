@@ -19,6 +19,7 @@ var (
 	confirmableCmds = map[string]struct{} {
 		"annotate": {},
 		"apply": {},
+		"create": {},
 		"delete": {},
 		"patch": {},
 		"rollout": {},
@@ -27,6 +28,7 @@ var (
 		"annotate": {},
 		"apply": {},
 		"cp": {},
+		"create": {},
 		"delete": {},
 		"edit": {},
 		"exec": {},
