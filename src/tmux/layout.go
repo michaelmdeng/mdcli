@@ -31,7 +31,7 @@ var (
 	twoPanePattern    = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v,%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, `(?P<sidePaneId>\d+)`))
 	multiPanePattern  = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, sidePanesPatternString))
 
-	mainPaneWidthPercent = 0.67
+	mainPaneWidthPercent = 0.69
 )
 
 type tmuxLayout struct {
