@@ -1,8 +1,8 @@
 package k8s
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -11,7 +11,7 @@ type KubeBuilder struct {
 }
 
 type Substitution struct {
-	Aliases []string
+	Aliases  []string
 	Generate func(context, namespace string) (string, error)
 }
 
@@ -133,7 +133,7 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 	}
 
 	for idx := last; idx < len(parsedArgs); idx++ {
-			output = append(output, parsedArgs[idx])
+		output = append(output, parsedArgs[idx])
 	}
 
 	return output, confirm

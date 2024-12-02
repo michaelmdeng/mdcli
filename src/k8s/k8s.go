@@ -11,44 +11,44 @@ import (
 )
 
 var (
-	inferableCmds = map[string]struct{} {
-		"exec": {},
-		"logs": {},
+	inferableCmds = map[string]struct{}{
+		"exec":         {},
+		"logs":         {},
 		"port-forward": {},
 	}
-	confirmableCmds = map[string]struct{} {
+	confirmableCmds = map[string]struct{}{
 		"annotate": {},
-		"apply": {},
-		"create": {},
-		"delete": {},
-		"patch": {},
-		"rollout": {},
+		"apply":    {},
+		"create":   {},
+		"delete":   {},
+		"patch":    {},
+		"rollout":  {},
 	}
-	editCmds = map[string]struct{} {
-		"annotate": {},
-		"apply": {},
-		"cp": {},
-		"create": {},
-		"delete": {},
-		"edit": {},
-		"exec": {},
-		"patch": {},
+	editCmds = map[string]struct{}{
+		"annotate":     {},
+		"apply":        {},
+		"cp":           {},
+		"create":       {},
+		"delete":       {},
+		"edit":         {},
+		"exec":         {},
+		"patch":        {},
 		"port-forward": {},
-		"rollout": {},
+		"rollout":      {},
 	}
-	resourceModifiableCmds = map[string]struct{} {
-		"exec": {},
-		"logs": {},
+	resourceModifiableCmds = map[string]struct{}{
+		"exec":         {},
+		"logs":         {},
 		"port-forward": {},
 	}
-	modifiableResources = map[string]struct{} {
-		"deploy": {},
-		"deployment": {},
+	modifiableResources = map[string]struct{}{
+		"deploy":      {},
+		"deployment":  {},
 		"statefulset": {},
-		"sts": {},
-		"service": {},
-		"svc": {},
-		"job": {},
+		"sts":         {},
+		"service":     {},
+		"svc":         {},
+		"job":         {},
 	}
 )
 

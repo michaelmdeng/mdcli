@@ -79,7 +79,7 @@ func BaseCommand() *cli.Command {
 		Subcommands: []*cli.Command{
 			kubectlCommand(),
 			k9sCommand(),
-	 	},
+		},
 	}
 }
 
@@ -88,7 +88,7 @@ func kubectlCommand() *cli.Command {
 		Name:    "kubectl",
 		Aliases: []string{"k", "kc", "kctl"},
 		Usage:   "Custom kubectl wrapper",
-		Flags: BaseK8sFlags,
+		Flags:   BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -130,8 +130,8 @@ func kubectlCommand() *cli.Command {
 
 func k9sCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "k9s",
-		Usage:   "Custom k9s wrapper",
+		Name:  "k9s",
+		Usage: "Custom k9s wrapper",
 		Flags: BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
