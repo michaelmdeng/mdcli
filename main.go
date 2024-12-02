@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/mdcli/k8s"
+	"github.com/mdcli/rm"
 	"github.com/mdcli/tidb"
 	"github.com/mdcli/tmux"
 	"github.com/mdcli/wiki"
@@ -16,17 +17,19 @@ const (
 
 func main() {
 	app := &cli.App{
-		Name:  "mdcli",
-		Usage: "mdeng personal CLI",
+		EnableBashCompletion: true,
+		Name:                 "mdcli",
+		Usage:                "Personal CLI",
 		Authors: []*cli.Author{
 			{
-				Name:  "mdeng",
+				Name:  "Michael Deng",
 				Email: "michaelmdeng@gmail.com",
 			},
 		},
 		Version: Version,
 		Commands: []*cli.Command{
 			k8s.BaseCommand(),
+			rm.BaseCommand(),
 			wiki.BaseCommand(),
 			tidb.BaseCommand(),
 			tmux.BaseCommand(),
