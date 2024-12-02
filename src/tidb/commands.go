@@ -48,7 +48,7 @@ func tidbSecretCommand() *cli.Command {
 		Name:    "secret",
 		Aliases: []string{"pass", "password"},
 		Usage:   "Fetch tidb root user password",
-		Flags:  append(mdk8s.BaseK8sFlags),
+		Flags:   append(mdk8s.BaseK8sFlags),
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -83,7 +83,7 @@ func tidbKubectlCommand() *cli.Command {
 		Name:    "kubectl",
 		Aliases: []string{"k", "kc", "kctl", "tk", "tkc", "tkctl"},
 		Usage:   "kubectl wrapper for TiDB",
-		Flags:  append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
+		Flags:   append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
 		Action: func(cCtx *cli.Context) error {
 			cfg := config.NewConfig()
 
@@ -144,7 +144,7 @@ func tidbK9sCommand() *cli.Command {
 		Name:    "k9s",
 		Aliases: []string{"tk9s"},
 		Usage:   "k9s wrapper for TiDB",
-		Flags: mdk8s.BaseK8sFlags,
+		Flags:   mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -194,8 +194,8 @@ func tidbMysqlCommand() *cli.Command {
 				Usage:   "Pod number to connect to. Defaults to 0.",
 			},
 			&cli.StringFlag{
-				Name:    "pod-name",
-				Usage:   "Pod name to connect to. Defaults to %tc-%az-%pod.",
+				Name:  "pod-name",
+				Usage: "Pod name to connect to. Defaults to %tc-%az-%pod.",
 			},
 			&cli.IntFlag{
 				Name:    "port",
@@ -243,7 +243,7 @@ func tidbMysqlCommand() *cli.Command {
 			if podName == "" {
 				podName = "%tc-%az-tidb"
 			}
-			podName = fmt.Sprintf("%s-%d", podName,  pod)
+			podName = fmt.Sprintf("%s-%d", podName, pod)
 			builder := NewTidbKubeBuilder()
 			portForwardCmd, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"port-forward", podName, fmt.Sprintf("%d:4000", port)})
 			cmd := exec.Command("kubectl", portForwardCmd...)
@@ -281,7 +281,7 @@ func tidbMysqlCommand() *cli.Command {
 			}
 
 			mysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-p" + rootPass, "--prompt=tidb> "}
-			redactedMysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-pPASS" , "--prompt=tidb> "}
+			redactedMysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-pPASS", "--prompt=tidb> "}
 
 			if debug {
 				fmt.Println(fmt.Sprintf("%s %s", "mysql", strings.Join(redactedMysqlArgs, " ")))

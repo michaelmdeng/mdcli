@@ -25,21 +25,21 @@ func Test_GenerateLink(t *testing.T) {
 
 func Test_HtmlOutputPath(t *testing.T) {
 	type testCase struct {
-		input string
-		expected string
+		input       string
+		expected    string
 		expectedErr error
 	}
 	cases := []testCase{
 		{
-			input: "/home/mdeng/MyDrive/vimwiki/wiki/index.md",
+			input:    "/home/mdeng/MyDrive/vimwiki/wiki/index.md",
 			expected: "/home/mdeng/MyDrive/vimwiki/html/index.html",
 		},
 		{
-			input: "/home/mdeng/MyDrive/vimwiki/wiki/foo/bar/baz.md",
+			input:    "/home/mdeng/MyDrive/vimwiki/wiki/foo/bar/baz.md",
 			expected: "/home/mdeng/MyDrive/vimwiki/html/foo/bar/baz.html",
 		},
 		{
-			input: "/foo/bar/baz.md",
+			input:       "/foo/bar/baz.md",
 			expectedErr: errors.New("not a wiki path"),
 		},
 	}

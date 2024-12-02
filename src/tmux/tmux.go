@@ -16,7 +16,6 @@ func currentWindow() (string, string, error) {
 		return "", "", err
 	}
 
-
 	output = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(output), "\""), "\"")
 	splitOutput := strings.Split(strings.TrimSpace(output), ":")
 	return splitOutput[0], splitOutput[1], nil
