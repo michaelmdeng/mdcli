@@ -159,7 +159,8 @@ func (b *KubeBuilder) BuildK9sArgs(context string, namespace string, allNamespac
 		trailArg = parsedArgs[0]
 		output = append(output, "-c", trailArg)
 	} else if len(parsedArgs) == 0 {
-		// do nothing
+		// set default resource
+		output = append(output, "-c", "pods")
 	} else {
 		return nil, errors.New(fmt.Sprintf("too many arguments provided to k9s: %s", strings.Join(args, " ")))
 	}

@@ -148,6 +148,12 @@ var stgNamespaceAliases = map[string][]string{
 		"udsshadow",
 		"shadow",
 	},
+	"tidb-ingestion-staging": {
+		"ingestion",
+	},
+	"tidb-ingestion-staging-dr": {
+		"ingestiondr",
+	},
 }
 
 var testNamespaceAliases = map[string][]string{
@@ -242,6 +248,12 @@ var testNamespaceAliases = map[string][]string{
 	},
 	"tidb-release-production": {
 		"release",
+	},
+	"tidb-mussel-test-hightouch-1": {
+		"musselhightouch",
+	},
+	"tidb-mussel-test-ht1-v75": {
+		"musselhightouch75",
 	},
 }
 
