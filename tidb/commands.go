@@ -12,8 +12,8 @@ import (
 
 	"github.com/bitfield/script"
 	"github.com/fatih/color"
-	mdexec "github.com/michaelmdeng/mdcli/cmd"
-	"github.com/michaelmdeng/mdcli/config"
+	mdexec "github.com/michaelmdeng/mdcli/internal/cmd"
+	"github.com/michaelmdeng/mdcli/internal/config"
 	mdk8s "github.com/michaelmdeng/mdcli/k8s"
 	"github.com/urfave/cli/v3"
 )

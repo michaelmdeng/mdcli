@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/michaelmdeng/mdcli/cmd"
+	"github.com/michaelmdeng/mdcli/internal/cmd"
 )
 
 var (

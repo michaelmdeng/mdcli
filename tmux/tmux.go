@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/michaelmdeng/mdcli/cmd"
+	"github.com/michaelmdeng/mdcli/internal/cmd"
 )
 
 func currentWindow() (string, string, error) {

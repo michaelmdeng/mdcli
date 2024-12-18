@@ -3,7 +3,7 @@ package tidb
 import (
 	"strings"
 
-	mdexec "github.com/michaelmdeng/mdcli/cmd"
+	mdexec "github.com/michaelmdeng/mdcli/internal/cmd"
 )
 
 func getTidbSecret(context, namespace string) (string, error) {

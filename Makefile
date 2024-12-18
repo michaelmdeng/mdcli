@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	go build -o bin/mdcli ./...
+	go build -o bin ./...
 
 .PHONY: tidy
 tidy:

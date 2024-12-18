@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/bitfield/script"
-	mdexec "github.com/michaelmdeng/mdcli/cmd"
+	mdexec "github.com/michaelmdeng/mdcli/internal/cmd"
 	"github.com/urfave/cli/v3"
 )
 
