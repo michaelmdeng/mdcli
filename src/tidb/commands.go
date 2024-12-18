@@ -31,7 +31,7 @@ func BaseCommand() *cli.Command {
 	return &cli.Command{
 		EnableShellCompletion: true,
 		Name:    "tidb",
-		Aliases: []string{"ti", "tdb"},
+		Aliases: []string{"ti", "db"},
 		Usage:   `Commands for managing TiDB on K8s`,
 		Commands: []*cli.Command{
 			tidbSecretCommand(),
@@ -83,7 +83,7 @@ func tidbSecretCommand() *cli.Command {
 func tidbKubectlCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "kubectl",
-		Aliases: []string{"k", "kc", "kctl", "tk", "tkc", "tkctl"},
+		Aliases: []string{"kc", "kctl", "tkc", "tkctl"},
 		Usage:   "kubectl wrapper for TiDB",
 		Flags:   append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
 		Action: func(ctx context.Context, cmd *cli.Command) error {

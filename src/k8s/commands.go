@@ -75,7 +75,7 @@ var BaseKctlFlags = []cli.Flag{
 func BaseCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "kubernetes",
-		Aliases: []string{"k", "kube", "k8s"},
+		Aliases: []string{"k8s"},
 		Usage:   k8sUsage,
 		Commands: []*cli.Command{
 			kubectlCommand(),
@@ -87,7 +87,7 @@ func BaseCommand() *cli.Command {
 func kubectlCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "kubectl",
-		Aliases: []string{"k", "kc", "kctl"},
+		Aliases: []string{ "kc", "kctl"},
 		Usage:   "Custom kubectl wrapper",
 		Flags:   BaseK8sFlags,
 		Action: func(ctx context.Context, cmd *cli.Command) error {

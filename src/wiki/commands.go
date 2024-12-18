@@ -115,8 +115,7 @@ func transformCommand() *cli.Command {
 	}
 }
 
-const openUsage = `Opens a wiki page in the browser
-
+const openUsage = `Opens a wiki page in the browser.
 Converts the page to html if necessary, or if force is set`
 
 func openCommand() *cli.Command {
