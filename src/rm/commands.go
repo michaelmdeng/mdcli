@@ -1,10 +1,11 @@
 package rm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const remarkableUsage = `Commands for working with reMarkable device.`
@@ -14,7 +15,7 @@ func BaseCommand() *cli.Command {
 		Name:    "remarkable",
 		Aliases: []string{"rm", "rem"},
 		Usage:   remarkableUsage,
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			documentsCommand(),
 			downloadCommand(),
 		},
@@ -33,7 +34,7 @@ func documentsCommand() *cli.Command {
 				Usage:   "Output format for response",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			documents, err := getDocuments()
 			if err != nil {
 				return err
@@ -73,9 +74,9 @@ func downloadCommand() *cli.Command {
 				Usage:   "File to download to",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
-			documentId := cCtx.String("documentId")
-			documentName := cCtx.String("documentName")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			documentId := cmd.String("documentId")
+			documentName := cmd.String("documentName")
 			var err error
 			if documentId != "" && documentName != "" {
 				return fmt.Errorf("only one of documentId or documentName can be specified")
@@ -88,7 +89,7 @@ func downloadCommand() *cli.Command {
 				}
 			}
 
-			err = downloadDocument(documentId, cCtx.String("output"))
+			err = downloadDocument(documentId, cmd.String("output"))
 			if err != nil {
 				return err
 			}

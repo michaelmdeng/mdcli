@@ -1,6 +1,7 @@
 package tidb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -14,7 +15,7 @@ import (
 	mdexec "github.com/mdcli/cmd"
 	"github.com/mdcli/config"
 	mdk8s "github.com/mdcli/k8s"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var BaseTidbFlags = []cli.Flag{
@@ -28,10 +29,11 @@ var BaseTidbFlags = []cli.Flag{
 
 func BaseCommand() *cli.Command {
 	return &cli.Command{
+		EnableShellCompletion: true,
 		Name:    "tidb",
 		Aliases: []string{"ti", "tdb"},
 		Usage:   `Commands for managing TiDB on K8s`,
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			tidbSecretCommand(),
 			tidbKubectlCommand(),
 			tidbK9sCommand(),
@@ -49,12 +51,12 @@ func tidbSecretCommand() *cli.Command {
 		Aliases: []string{"pass", "password"},
 		Usage:   "Fetch tidb root user password",
 		Flags:   append(mdk8s.BaseK8sFlags),
-		Action: func(cCtx *cli.Context) error {
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			allNamespaces := cCtx.Bool("all-namespaces")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			allNamespaces := cmd.Bool("all-namespaces")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -84,17 +86,17 @@ func tidbKubectlCommand() *cli.Command {
 		Aliases: []string{"k", "kc", "kctl", "tk", "tkc", "tkctl"},
 		Usage:   "kubectl wrapper for TiDB",
 		Flags:   append(mdk8s.BaseK8sFlags, mdk8s.BaseKctlFlags...),
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			cfg := config.NewConfig()
 
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
-			allNamespaces := cCtx.Bool("all-namespaces")
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
-			confirmed := cCtx.Bool("yes")
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
+			allNamespaces := cmd.Bool("all-namespaces")
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
+			confirmed := cmd.Bool("yes")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -111,7 +113,7 @@ func tidbKubectlCommand() *cli.Command {
 				assumeClusterAdmin = assumeClusterAdmin || cfg.EnableClusterAdminForTest
 			}
 			builder := NewTidbKubeBuilder()
-			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
+			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cmd.Args().Slice())
 
 			needsConfirm := confirm && !confirmed
 			if debug || needsConfirm {
@@ -145,13 +147,13 @@ func tidbK9sCommand() *cli.Command {
 		Aliases: []string{"tk9s"},
 		Usage:   "k9s wrapper for TiDB",
 		Flags:   mdk8s.BaseK8sFlags,
-		Action: func(cCtx *cli.Context) error {
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
-			allNamespaces := cCtx.Bool("all-namespaces")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
+			allNamespaces := cmd.Bool("all-namespaces")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -165,7 +167,7 @@ func tidbK9sCommand() *cli.Command {
 			}
 
 			builder := NewTidbKubeBuilder()
-			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
+			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cmd.Args().Slice())
 			if err != nil {
 				return err
 			}
@@ -204,21 +206,21 @@ func tidbMysqlCommand() *cli.Command {
 				Usage:   "Port to forward to. Defaults to random 40xx.",
 			},
 		),
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			cfg := config.NewConfig()
 
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			pod := cCtx.Int("pod")
-			podName := cCtx.String("pod-name")
-			port := cCtx.Int("port")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			pod := cmd.Int("pod")
+			podName := cmd.String("pod-name")
+			port := cmd.Int("port")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
 
 			if port == -1 {
-				port = rand.Intn(100) + 4000
+				port = rand.Int63n(100) + 4000
 			}
 
 			var err error
@@ -246,15 +248,15 @@ func tidbMysqlCommand() *cli.Command {
 			podName = fmt.Sprintf("%s-%d", podName, pod)
 			builder := NewTidbKubeBuilder()
 			portForwardCmd, _ := builder.BuildKubectlArgs(context, namespace, false, assumeClusterAdmin, []string{"port-forward", podName, fmt.Sprintf("%d:4000", port)})
-			cmd := exec.Command("kubectl", portForwardCmd...)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			c := exec.Command("kubectl", portForwardCmd...)
+			c.Stdin = os.Stdin
+			c.Stdout = os.Stdout
+			c.Stderr = os.Stderr
 
 			defer func() {
 				fmt.Println("Stopping port-forward")
-				if cmd.Process != nil {
-					if err := cmd.Process.Kill(); err != nil {
+				if c.Process != nil {
+					if err := c.Process.Kill(); err != nil {
 						fmt.Println("Error stopping port-forward:", err)
 					}
 				}
@@ -267,7 +269,7 @@ func tidbMysqlCommand() *cli.Command {
 			portForwardErr := make(chan error)
 			go func() {
 				fmt.Println(fmt.Sprintf("Starting port-forward from %s:4000 to %d", podName, port))
-				if err = cmd.Run(); err != nil {
+				if err = c.Run(); err != nil {
 					fmt.Println(err)
 					portForwardErr <- err
 				}
@@ -320,18 +322,18 @@ func tidbDmctlCommand() *cli.Command {
 				Usage:   "Whether to connect to dm-worker. Defaults to false (dm-master).",
 			},
 		),
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			cfg := config.NewConfig()
 
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			pod := cCtx.Int("pod")
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
-			useWorker := cCtx.Bool("worker")
-			disableTls := cCtx.Bool("disable-tls")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			pod := cmd.Int("pod")
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
+			useWorker := cmd.Bool("worker")
+			disableTls := cmd.Bool("disable-tls")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -366,9 +368,9 @@ func tidbDmctlCommand() *cli.Command {
 				dmctlCmd = fmt.Sprintf(`./dmctl --master-addr %s --ssl-cert %s/tls.crt --ssl-key %s/tls.key --ssl-ca %s/ca.crt`, dmMasterEndpoint, tlsPath, tlsPath, tlsPath)
 			}
 
-			if len(cCtx.Args().Slice()) > 0 {
+			if len(cmd.Args().Slice()) > 0 {
 				dmctlCmd += " "
-				dmctlCmd += strings.Join(cCtx.Args().Slice(), " ")
+				dmctlCmd += strings.Join(cmd.Args().Slice(), " ")
 			}
 
 			if isTestTidbContext(context) {
@@ -400,17 +402,17 @@ func tidbPdctlCommand() *cli.Command {
 				Usage:   "Pod number to connect to. Defaults to 0.",
 			},
 		),
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			cfg := config.NewConfig()
 
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			pod := cCtx.Int("pod")
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
-			disableTls := cCtx.Bool("disable-tls")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			pod := cmd.Int("pod")
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
+			disableTls := cmd.Bool("disable-tls")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -464,17 +466,17 @@ func ticdcCommand() *cli.Command {
 				Usage:   "Pod number to connect to. Defaults to 0.",
 			},
 		),
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			cfg := config.NewConfig()
 
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			pod := cCtx.Int("pod")
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
-			disableTls := cCtx.Bool("disable-tls")
-			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			pod := cmd.Int("pod")
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
+			disableTls := cmd.Bool("disable-tls")
+			debug := cmd.Bool("debug") && !mdexec.IsPipe()
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -492,11 +494,11 @@ func ticdcCommand() *cli.Command {
 			var pdEndpoint, cdcCmd string
 			if disableTls {
 				pdEndpoint = fmt.Sprintf("http://%s-pd:2379", clusterName)
-				cdcCmd = fmt.Sprintf("./cdc cli --pd %s %s", pdEndpoint, strings.Join(cCtx.Args().Slice(), " "))
+				cdcCmd = fmt.Sprintf("./cdc cli --pd %s %s", pdEndpoint, strings.Join(cmd.Args().Slice(), " "))
 			} else {
 				tlsPath := "/var/lib/cluster-client-tls"
 				pdEndpoint = fmt.Sprintf("https://%s-pd:2379", clusterName)
-				cdcCmd = fmt.Sprintf("./cdc cli --pd %s --cert %s/tls.crt --key %s/tls.key --ca %s/ca.crt %s", pdEndpoint, tlsPath, tlsPath, tlsPath, strings.Join(cCtx.Args().Slice(), " "))
+				cdcCmd = fmt.Sprintf("./cdc cli --pd %s --cert %s/tls.crt --key %s/tls.key --ca %s/ca.crt %s", pdEndpoint, tlsPath, tlsPath, tlsPath, strings.Join(cmd.Args().Slice(), " "))
 			}
 
 			if isTestTidbContext(context) {

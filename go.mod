@@ -8,12 +8,11 @@ require (
 	github.com/mdcli/tidb v0.0.0-00010101000000-000000000000
 	github.com/mdcli/tmux v0.0.0-00010101000000-000000000000
 	github.com/mdcli/wiki v0.0.0-00010101000000-000000000000
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v3 v3.0.0-beta1
 )
 
 require (
 	github.com/bitfield/script v0.22.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/itchyny/gojq v0.12.12 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
@@ -21,8 +20,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mdcli/cmd v0.0.0-00010101000000-000000000000 // indirect
 	github.com/mdcli/config v0.0.0-00010101000000-000000000000 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	mvdan.cc/sh/v3 v3.6.0 // indirect
 )

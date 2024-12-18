@@ -1,9 +1,10 @@
 package tmux
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const tmuxUsage = `Commands for manipulating custom tmux layouts.`
@@ -13,7 +14,7 @@ func BaseCommand() *cli.Command {
 		Name:    "tmux",
 		Aliases: []string{"tm", "tx"},
 		Usage:   tmuxUsage,
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			layoutCommand(),
 			switchCommand(),
 			panesCommand(),
@@ -44,9 +45,9 @@ func layoutCommand() *cli.Command {
 				Usage:   "`WINDOW` to set the default layout for. Defaults to all windows in the session.",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
-			session := cCtx.String("session")
-			window := cCtx.String("window")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			session := cmd.String("session")
+			window := cmd.String("window")
 
 			var windows []string
 			var err error
@@ -114,7 +115,7 @@ func switchCommand() *cli.Command {
 		Name:    "switch",
 		Aliases: []string{"s"},
 		Usage:   switchUsage,
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			return switchExtraPane()
 		},
 	}
@@ -141,14 +142,14 @@ func toggleCommand() *cli.Command {
 				Usage:   "`WINDOW` to toggle the window layout for. Defaults to all windows in the session.",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
-			session := cCtx.String("session")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			session := cmd.String("session")
 			isWindow, err := isWindowBased(session)
 			if err != nil {
 				return err
 			}
 
-			window := cCtx.String("window")
+			window := cmd.String("window")
 			if isWindow {
 				return setPaneWindowLayout(session, window)
 			}
@@ -179,8 +180,8 @@ func panesCommand() *cli.Command {
 				Usage:   "`WINDOW` to change the window layout for. Defaults to all windows in the session.",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
-			return setPaneWindowLayout(cCtx.String("session"), cCtx.String("window"))
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			return setPaneWindowLayout(cmd.String("session"), cmd.String("window"))
 		},
 	}
 }
@@ -206,8 +207,8 @@ func windowsCommand() *cli.Command {
 				Usage:   "`WINDOW` to change the window layout for. Defaults to all windows in the session.",
 			},
 		},
-		Action: func(cCtx *cli.Context) error {
-			return setWindowWindowLayout(cCtx.String("session"), cCtx.String("window"))
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			return setWindowWindowLayout(cmd.String("session"), cmd.String("window"))
 		},
 	}
 }

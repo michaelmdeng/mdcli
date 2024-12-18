@@ -1,13 +1,14 @@
 package k8s
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/bitfield/script"
 	mdexec "github.com/mdcli/cmd"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const (
@@ -76,7 +77,7 @@ func BaseCommand() *cli.Command {
 		Name:    "kubernetes",
 		Aliases: []string{"k", "kube", "k8s"},
 		Usage:   k8sUsage,
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			kubectlCommand(),
 			k9sCommand(),
 		},
@@ -89,14 +90,14 @@ func kubectlCommand() *cli.Command {
 		Aliases: []string{"k", "kc", "kctl"},
 		Usage:   "Custom kubectl wrapper",
 		Flags:   BaseK8sFlags,
-		Action: func(cCtx *cli.Context) error {
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			dryRun := cCtx.Bool("dryrun")
-			allNamespaces := cCtx.Bool("all-namespaces")
-			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			dryRun := cmd.Bool("dryrun")
+			allNamespaces := cmd.Bool("all-namespaces")
+			assumeClusterAdmin := cmd.Bool("assume-cluster-admin")
 
 			var err error
 			context, err = ParseContext(context, interactive, "", strict)
@@ -110,7 +111,7 @@ func kubectlCommand() *cli.Command {
 			}
 
 			builder := NewKubeBuilder()
-			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
+			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cmd.Args().Slice())
 			if dryRun {
 				fmt.Println(fmt.Sprintf("%s %s", Kubectl, strings.Join(args, " ")))
 				return nil
@@ -133,13 +134,13 @@ func k9sCommand() *cli.Command {
 		Name:  "k9s",
 		Usage: "Custom k9s wrapper",
 		Flags: BaseK8sFlags,
-		Action: func(cCtx *cli.Context) error {
-			strict := cCtx.Bool("strict")
-			context := cCtx.String("context")
-			namespace := cCtx.String("namespace")
-			interactive := cCtx.Bool("interactive")
-			dryRun := cCtx.Bool("dryrun")
-			allNamespaces := cCtx.Bool("all-namespaces")
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			strict := cmd.Bool("strict")
+			context := cmd.String("context")
+			namespace := cmd.String("namespace")
+			interactive := cmd.Bool("interactive")
+			dryRun := cmd.Bool("dryrun")
+			allNamespaces := cmd.Bool("all-namespaces")
 
 			var err error
 			context, err = ParseContext(context, interactive, "", strict)
@@ -153,7 +154,7 @@ func k9sCommand() *cli.Command {
 			}
 
 			builder := NewKubeBuilder()
-			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
+			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cmd.Args().Slice())
 			if err != nil {
 				return err
 			}
