@@ -41,6 +41,7 @@ func BaseCommand() *cli.Command {
 			tidbDmctlCommand(),
 			tidbPdctlCommand(),
 			ticdcCommand(),
+			BaseTikvCommand(),
 		},
 	}
 }
