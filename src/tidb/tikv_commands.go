@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	mdexec "github.com/mdcli/cmd"
-	mdk8s "github.com/mdcli/k8s"
+	mdexec "github.com/michaelmdeng/mdcli/cmd"
+	mdk8s "github.com/michaelmdeng/mdcli/k8s"
 	"github.com/urfave/cli/v3"
 )
 

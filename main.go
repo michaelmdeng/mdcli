@@ -4,11 +4,11 @@ import (
 	"context"
 	"os"
 
-	"github.com/mdcli/k8s"
-	"github.com/mdcli/rm"
-	"github.com/mdcli/tidb"
-	"github.com/mdcli/tmux"
-	"github.com/mdcli/wiki"
+	"github.com/michaelmdeng/mdcli/k8s"
+	"github.com/michaelmdeng/mdcli/rm"
+	"github.com/michaelmdeng/mdcli/tidb"
+	"github.com/michaelmdeng/mdcli/tmux"
+	"github.com/michaelmdeng/mdcli/wiki"
 	"github.com/urfave/cli/v3"
 )
 

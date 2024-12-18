@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	mdk8s "github.com/mdcli/k8s"
+	mdk8s "github.com/michaelmdeng/mdcli/k8s"
 )
 
 var contextAliases = map[string][]string{

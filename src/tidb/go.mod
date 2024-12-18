@@ -1,19 +1,19 @@
-module github.com/mdcli/tidb
+module github.com/michaelmdeng/mdcli/tidb
 
 go 1.21.11
 
-replace github.com/mdcli/cmd => ../cmd
+replace github.com/michaelmdeng/mdcli/cmd => ../cmd
 
-replace github.com/mdcli/config => ../config
+replace github.com/michaelmdeng/mdcli/config => ../config
 
-replace github.com/mdcli/k8s => ../k8s
+replace github.com/michaelmdeng/mdcli/k8s => ../k8s
 
 require (
 	github.com/bitfield/script v0.22.0
 	github.com/fatih/color v1.18.0
-	github.com/mdcli/cmd v0.0.0-00010101000000-000000000000
-	github.com/mdcli/config v0.0.0-00010101000000-000000000000
-	github.com/mdcli/k8s v0.0.0-00010101000000-000000000000
+	github.com/michaelmdeng/mdcli/cmd v0.0.0-00010101000000-000000000000
+	github.com/michaelmdeng/mdcli/config v0.0.0-00010101000000-000000000000
+	github.com/michaelmdeng/mdcli/k8s v0.0.0-00010101000000-000000000000
 	github.com/urfave/cli/v3 v3.0.0-beta1
 )
 

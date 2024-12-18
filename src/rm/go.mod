@@ -1,4 +1,4 @@
-module github.com/mdcli/rm
+module github.com/michaelmdeng/mdcli/rm
 
 go 1.21.13
 

@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mdcli/cmd"
+	"github.com/michaelmdeng/mdcli/cmd"
 )
 
 var (
