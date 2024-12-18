@@ -1,7 +1,6 @@
 package tidb
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -9,7 +8,7 @@ import (
 
 	mdexec "github.com/michaelmdeng/mdcli/internal/cmd"
 	mdk8s "github.com/michaelmdeng/mdcli/k8s"
-	"github.com/urfave/cli/v3"
+	"github.com/urfave/cli/v2"
 )
 
 func BaseTikvCommand() *cli.Command {
@@ -17,7 +16,7 @@ func BaseTikvCommand() *cli.Command {
 		Name:    "tikv",
 		Aliases: []string{"kv"},
 		Usage:   `Commands for handling TiKVs on K8s`,
-		Commands: []*cli.Command{
+		Subcommands: []*cli.Command{
 			tikvGetCommand(),
 			tikvStoreCommand(),
 		},
@@ -25,26 +24,26 @@ func BaseTikvCommand() *cli.Command {
 }
 
 type getTikvOutput struct {
-	name    string
-	storeId int
+	name       string
+	storeId    int
 	instanceId string
-	dataVol string
-	walVol string
-	raftVol string
+	dataVol    string
+	walVol     string
+	raftVol    string
 }
 
 func tikvGetCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "get",
-		Usage:   "Fetch tikv info",
-		Flags:  append(mdk8s.BaseK8sFlags),
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			strict := cmd.Bool("strict")
-			context := cmd.String("context")
-			namespace := cmd.String("namespace")
-			interactive := cmd.Bool("interactive")
-			debug := cmd.Bool("debug") && !mdexec.IsPipe()
-			allNamespaces := cmd.Bool("all-namespaces")
+		Name:  "get",
+		Usage: "Fetch tikv info",
+		Flags: append(mdk8s.BaseK8sFlags),
+		Action: func(cCtx *cli.Context) error {
+			strict := cCtx.Bool("strict")
+			context := cCtx.String("context")
+			namespace := cCtx.String("namespace")
+			interactive := cCtx.Bool("interactive")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
+			allNamespaces := cCtx.Bool("all-namespaces")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -57,9 +56,9 @@ func tikvGetCommand() *cli.Command {
 				return err
 			}
 
-			tikvName := cmd.Args().Get(0)
+			tikvName := cCtx.Args().Get(0)
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
-			tikvName = strings.TrimPrefix(tikvName, clusterName + "-")
+			tikvName = strings.TrimPrefix(tikvName, clusterName+"-")
 			tikvName = strings.TrimPrefix(tikvName, "tikv-")
 			tikvNum := tikvName
 			tikvName = fmt.Sprintf("%s-tikv-%s", clusterName, tikvName)
@@ -75,7 +74,7 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			output = output[1:len(output)-1]
+			output = output[1 : len(output)-1]
 
 			var tikvStores map[string]any
 			err = json.Unmarshal([]byte(output), &tikvStores)
@@ -123,7 +122,7 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			dataVol := output[1:len(output)-1]
+			dataVol := output[1 : len(output)-1]
 
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", walPv, "-o", "jsonpath='{.spec.csi.volumeHandle}'"})
 
@@ -135,7 +134,7 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			walVol := output[1:len(output)-1]
+			walVol := output[1 : len(output)-1]
 
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", raftPv, "-o", "jsonpath='{.spec.csi.volumeHandle}'"})
 
@@ -147,7 +146,7 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			raftVol := output[1:len(output)-1]
+			raftVol := output[1 : len(output)-1]
 
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pod", tikvName, "-o", "jsonpath='{.spec.nodeName}'"})
 
@@ -159,7 +158,7 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			nodeName := output[1:len(output)-1]
+			nodeName := output[1 : len(output)-1]
 
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "node", nodeName, "-o", "jsonpath='{.metadata.labels.node\\.airbnb\\.com/instance-id}'"})
 
@@ -171,15 +170,15 @@ func tikvGetCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			instanceId := output[1:len(output)-1]
+			instanceId := output[1 : len(output)-1]
 
 			tikvOutput := map[string]any{
-				"name": tikvName,
-				"storeId": storeId,
+				"name":       tikvName,
+				"storeId":    storeId,
 				"instanceId": instanceId,
-				"dataVol": dataVol,
-				"walVol": walVol,
-				"raftVol": raftVol,
+				"dataVol":    dataVol,
+				"walVol":     walVol,
+				"raftVol":    raftVol,
 			}
 
 			out, err := json.Marshal(tikvOutput)
@@ -195,16 +194,16 @@ func tikvGetCommand() *cli.Command {
 
 func tikvStoreCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "store",
-		Usage:   "Fetch tikv store info",
-		Flags:  append(mdk8s.BaseK8sFlags),
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			strict := cmd.Bool("strict")
-			context := cmd.String("context")
-			namespace := cmd.String("namespace")
-			interactive := cmd.Bool("interactive")
-			debug := cmd.Bool("debug") && !mdexec.IsPipe()
-			allNamespaces := cmd.Bool("all-namespaces")
+		Name:  "store",
+		Usage: "Fetch tikv store info",
+		Flags: append(mdk8s.BaseK8sFlags),
+		Action: func(cCtx *cli.Context) error {
+			strict := cCtx.Bool("strict")
+			context := cCtx.String("context")
+			namespace := cCtx.String("namespace")
+			interactive := cCtx.Bool("interactive")
+			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
+			allNamespaces := cCtx.Bool("all-namespaces")
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -217,9 +216,9 @@ func tikvStoreCommand() *cli.Command {
 				return err
 			}
 
-			tikvName := cmd.Args().Get(0)
+			tikvName := cCtx.Args().Get(0)
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
-			tikvName = strings.TrimPrefix(tikvName, clusterName + "-")
+			tikvName = strings.TrimPrefix(tikvName, clusterName+"-")
 			tikvName = strings.TrimPrefix(tikvName, "tikv-")
 			tikvName = fmt.Sprintf("%s-tikv-%s", clusterName, tikvName)
 
@@ -234,7 +233,7 @@ func tikvStoreCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			output = output[1:len(output)-1]
+			output = output[1 : len(output)-1]
 
 			var tikvStores map[string]any
 			err = json.Unmarshal([]byte(output), &tikvStores)

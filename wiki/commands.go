@@ -1,12 +1,11 @@
 package wiki
 
 import (
-	"context"
 	"os"
 	"path"
 
 	mdexec "github.com/michaelmdeng/mdcli/internal/cmd"
-	"github.com/urfave/cli/v3"
+	"github.com/urfave/cli/v2"
 )
 
 const wikiUsage = `Provides commands for managing my personal wiki`
@@ -16,7 +15,7 @@ func BaseCommand() *cli.Command {
 		Name:    "wiki",
 		Aliases: []string{"w"},
 		Usage:   wikiUsage,
-		Commands: []*cli.Command{
+		Subcommands: []*cli.Command{
 			convertCommand(),
 			transformCommand(),
 			openCommand(),
@@ -50,8 +49,8 @@ func convertCommand() *cli.Command {
 				Usage:   "Force conversion of md to html",
 			},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			inputPath := cmd.Args().First()
+		Action: func(cCtx *cli.Context) error {
+			inputPath := cCtx.Args().First()
 			outputPath, err := HtmlOutputPath(inputPath)
 			if err != nil {
 				return err
@@ -61,12 +60,12 @@ func convertCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			cssPath := cmd.String("css")
+			cssPath := cCtx.String("css")
 			cssAbsPath := path.Join(homeDir, cssPath)
-			templatePath := cmd.String("template")
+			templatePath := cCtx.String("template")
 			templateAbsPath := path.Join(homeDir, templatePath)
 
-			return Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cmd.Bool("force"))
+			return Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cCtx.Bool("force"))
 		},
 	}
 }
@@ -97,20 +96,20 @@ func transformCommand() *cli.Command {
 				Usage:   "Force conversion of md to html",
 			},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			inputDir := cmd.Args().First()
+		Action: func(cCtx *cli.Context) error {
+			inputDir := cCtx.Args().First()
 			htmlDir := path.Join(inputDir, "../html")
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				return err
 			}
-			cssPath := cmd.String("css")
+			cssPath := cCtx.String("css")
 			cssAbsPath := path.Join(homeDir, cssPath)
-			templatePath := cmd.String("template")
+			templatePath := cCtx.String("template")
 			templateAbsPath := path.Join(homeDir, templatePath)
 
-			return Transform(inputDir, htmlDir, templateAbsPath, cssAbsPath, cmd.Bool("force"))
+			return Transform(inputDir, htmlDir, templateAbsPath, cssAbsPath, cCtx.Bool("force"))
 		},
 	}
 }
@@ -148,17 +147,17 @@ func openCommand() *cli.Command {
 				Usage:   "Force conversion of md to html",
 			},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
+		Action: func(cCtx *cli.Context) error {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				return err
 			}
-			cssPath := cmd.String("css")
+			cssPath := cCtx.String("css")
 			cssAbsPath := path.Join(homeDir, cssPath)
-			templatePath := cmd.String("template")
+			templatePath := cCtx.String("template")
 			templateAbsPath := path.Join(homeDir, templatePath)
 
-			inputPath := cmd.Args().First()
+			inputPath := cCtx.Args().First()
 			_, err = basePath(inputPath)
 			var outputPath string
 			if err != nil {
@@ -172,13 +171,13 @@ func openCommand() *cli.Command {
 					return err
 				}
 
-				err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cmd.Bool("force"))
+				err = Convert(inputPath, outputPath, templateAbsPath, cssAbsPath, cCtx.Bool("force"))
 				if err != nil {
 					return err
 				}
 			}
 
-			err = mdexec.RunCommand(cmd.String("browser"), outputPath)
+			err = mdexec.RunCommand(cCtx.String("browser"), outputPath)
 			if err != nil {
 				return err
 			}
