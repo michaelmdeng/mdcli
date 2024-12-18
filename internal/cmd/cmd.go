@@ -43,7 +43,7 @@ func GetConfirmation(s string) bool {
 
 	numAttempts := 3
 	for i := 0; i < numAttempts; i++ {
-		fmt.Printf("%s [y/n]: ", s)
+		fmt.Fprintf(os.Stderr, "%s [y/n]: ", s)
 
 		response, err := reader.ReadString('\n')
 		if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/michaelmdeng/mdcli/k8s"
 	"github.com/michaelmdeng/mdcli/rm"
 	"github.com/michaelmdeng/mdcli/tidb"
@@ -16,6 +17,8 @@ const (
 )
 
 func main() {
+	color.NoColor = false
+
 	app := &cli.App{
 		EnableBashCompletion: true,
 		Name:                 "mdcli",
