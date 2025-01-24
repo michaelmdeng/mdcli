@@ -132,6 +132,10 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 		output = append(output, "--as=compute:cluster-admin")
 	}
 
+	if kubectlCmd == "exec" && len(parsedArgs) == 2 {
+		output = append(output, "-it", "--", "bash")
+	}
+
 	for idx := last; idx < len(parsedArgs); idx++ {
 		output = append(output, parsedArgs[idx])
 	}
