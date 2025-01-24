@@ -38,6 +38,7 @@ func BaseCommand() *cli.Command {
 			tidbDmctlCommand(),
 			tidbPdctlCommand(),
 			ticdcCommand(),
+			BasePdCommand(),
 			BaseTikvCommand(),
 		},
 	}
