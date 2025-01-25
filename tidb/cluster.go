@@ -11,35 +11,44 @@ import (
 
 var contextAliases = map[string][]string{
 	"m-tidb-prod-a-ea1-us": {
+		"prod1a",
 		"proda",
 		"prod",
 	},
 	"m-tidb-prod-b-ea1-us": {
+		"prod1b",
 		"prodb",
 	},
 	"m-tidb-prod-c-ea1-us": {
+		"prod1e",
 		"prodc",
 		"prode",
 	},
 	"m-tidb-stg-a-ea1-us": {
+		"stg1a",
 		"stga",
 		"stg",
 	},
 	"m-tidb-stg-b-ea1-us": {
+		"stg1b",
 		"stgb",
 	},
 	"m-tidb-stg-c-ea1-us": {
+		"stg1e",
 		"stgc",
 		"stge",
 	},
 	"m-tidb-test-a-ea1-us": {
+		"test1a",
 		"testa",
 		"test",
 	},
 	"m-tidb-test-b-ea1-us": {
+		"test1b",
 		"testb",
 	},
 	"m-tidb-test-c-ea1-us": {
+		"test1e",
 		"testc",
 		"teste",
 	},
