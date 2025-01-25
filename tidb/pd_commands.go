@@ -10,8 +10,8 @@ import (
 
 func BasePdCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "pd",
-		Usage:   `Commands for handling PD on K8s`,
+		Name:  "pd",
+		Usage: `Commands for handling PD on K8s`,
 		Subcommands: []*cli.Command{
 			pdTsoCommand(),
 		},
@@ -24,14 +24,14 @@ func pdTsoCommand() *cli.Command {
 		Usage: "Perform TSO/timestamp conversion",
 		Flags: []cli.Flag{
 			&cli.IntFlag{
-				Name:    "tso",
-				Value:   0,
-				Usage:   "TSO to convert",
+				Name:  "tso",
+				Value: 0,
+				Usage: "TSO to convert",
 			},
 			&cli.StringFlag{
-				Name:    "ts",
-				Value:   "",
-				Usage:   "timestamp to convert",
+				Name:  "ts",
+				Value: "",
+				Usage: "timestamp to convert",
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
@@ -46,7 +46,7 @@ func pdTsoCommand() *cli.Command {
 			}
 
 			if tso != 0 {
-				t := time.Unix(int64((tso / 1000) >> 18), 0).UTC()
+				t := time.Unix(int64((tso/1000)>>18), 0).UTC()
 				ts := t.Format(time.RFC3339)
 				fmt.Println(ts)
 			} else {
@@ -63,4 +63,3 @@ func pdTsoCommand() *cli.Command {
 		},
 	}
 }
-

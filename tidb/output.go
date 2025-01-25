@@ -26,5 +26,5 @@ func debugPrintfln(format string, args ...interface{}) {
 }
 
 func debugPrintln(args ...interface{}) {
-	fmt.Fprintln(os.Stderr,  args...)
+	fmt.Fprintln(os.Stderr, args...)
 }
