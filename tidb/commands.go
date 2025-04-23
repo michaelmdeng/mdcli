@@ -57,6 +57,8 @@ func tidbSecretCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			allNamespaces := cCtx.Bool("all-namespaces")
 
+			context = inferContextFromNamespace(context, namespace)
+
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
@@ -96,6 +98,8 @@ func tidbKubectlCommand() *cli.Command {
 			allNamespaces := cCtx.Bool("all-namespaces")
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			confirmed := cCtx.Bool("yes")
+
+			context = inferContextFromNamespace(context, namespace)
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -145,6 +149,8 @@ func tidbK9sCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			debug := cCtx.Bool("debug")
 			allNamespaces := cCtx.Bool("all-namespaces")
+
+			context = inferContextFromNamespace(context, namespace)
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -220,6 +226,8 @@ func tidbMysqlCommand() *cli.Command {
 			if port == -1 {
 				port = rand.Intn(100) + 4000
 			}
+
+			context = inferContextFromNamespace(context, namespace)
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
@@ -333,6 +341,8 @@ func tidbDmctlCommand() *cli.Command {
 			disableTls := cCtx.Bool("disable-tls")
 			debug := cCtx.Bool("debug")
 
+			context = inferContextFromNamespace(context, namespace)
+
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
@@ -412,6 +422,8 @@ func tidbPdctlCommand() *cli.Command {
 			disableTls := cCtx.Bool("disable-tls")
 			debug := cCtx.Bool("debug")
 
+			context = inferContextFromNamespace(context, namespace)
+
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
@@ -475,6 +487,8 @@ func ticdcCommand() *cli.Command {
 			assumeClusterAdmin := cCtx.Bool("assume-cluster-admin")
 			disableTls := cCtx.Bool("disable-tls")
 			debug := cCtx.Bool("debug")
+
+			context = inferContextFromNamespace(context, namespace)
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)

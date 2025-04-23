@@ -9,6 +9,18 @@ import (
 	mdk8s "github.com/michaelmdeng/mdcli/k8s"
 )
 
+const (
+	ProdEnv  = "prod"
+	StgEnv   = "stg"
+	TestEnv  = "test"
+)
+
+var defaultContextsByEnv map[string]string = map[string]string{
+	"prod": "m-tidb-prod-a-ea1-us",
+	"stg":  "m-tidb-stg-a-ea1-us",
+	"test": "m-tidb-test-a-ea1-us",
+}
+
 var contextAliases = map[string][]string{
 	"m-tidb-prod-a-ea1-us": {
 		"prod1a",
@@ -54,7 +66,58 @@ var contextAliases = map[string][]string{
 	},
 }
 
+var contextEnvAliases = map[string]map[string][]string{
+	"prod": {
+		"m-tidb-prod-a-ea1-us": {
+			"1a",
+			"a",
+		},
+		"m-tidb-prod-b-ea1-us": {
+			"1b",
+			"b",
+		},
+		"m-tidb-prod-c-ea1-us": {
+			"1e",
+			"c",
+			"e",
+		},
+	},
+	"stg": {
+		"m-tidb-stg-a-ea1-us": {
+			"1a",
+			"a",
+		},
+		"m-tidb-stg-b-ea1-us": {
+			"1b",
+			"b",
+		},
+		"m-tidb-stg-c-ea1-us": {
+			"1e",
+			"c",
+			"e",
+		},
+	},
+	"test": {
+		"m-tidb-test-a-ea1-us": {
+			"1a",
+			"a",
+		},
+		"m-tidb-test-b-ea1-us": {
+			"1b",
+			"b",
+		},
+		"m-tidb-test-c-ea1-us": {
+			"1e",
+			"c",
+			"e",
+		},
+	},
+}
+
 var ContextsByAlias = make(map[string]string)
+var EnvsByAlias = make(map[string]string)
+var EnvsByNamespace = make(map[string]string)
+var ContextsByEnvAlias = make(map[string]map[string]string)
 
 func init() {
 	for context, contextAliases := range contextAliases {
@@ -76,6 +139,71 @@ func init() {
 	for namespace, namespaceAliases := range testNamespaceAliases {
 		for _, alias := range namespaceAliases {
 			TestNamespacesByAlias[alias] = namespace
+		}
+	}
+
+	for prodNamespace, _ := range prodNamespaceAliases {
+		if _, ok := stgNamespaceAliases[prodNamespace]; !ok {
+			if _, ok := testNamespaceAliases[prodNamespace]; !ok {
+				EnvsByNamespace[prodNamespace] = ProdEnv
+			}
+		}
+	}
+
+	for _, prodAliases := range prodNamespaceAliases {
+		for _, prodAlias := range prodAliases {
+			if _, ok := StgNamespacesByAlias[prodAlias]; !ok {
+				if _, ok := TestNamespacesByAlias[prodAlias]; !ok {
+					EnvsByAlias[prodAlias] = ProdEnv
+				}
+			}
+		}
+	}
+
+	for stgNamespace, _ := range stgNamespaceAliases {
+		if _, ok := prodNamespaceAliases[stgNamespace]; !ok {
+			if _, ok := testNamespaceAliases[stgNamespace]; !ok {
+				EnvsByNamespace[stgNamespace] = StgEnv
+			}
+		}
+	}
+
+	for _, stgAliases := range stgNamespaceAliases {
+		for _, stgAlias := range stgAliases {
+			if _, ok := ProdNamespacesByAlias[stgAlias]; !ok {
+				if _, ok := TestNamespacesByAlias[stgAlias]; !ok {
+					EnvsByAlias[stgAlias] = StgEnv
+				}
+			}
+		}
+	}
+
+	for testNamespace, _ := range testNamespaceAliases {
+		if _, ok := prodNamespaceAliases[testNamespace]; !ok {
+			if _, ok := stgNamespaceAliases[testNamespace]; !ok {
+				EnvsByNamespace[testNamespace] = TestEnv
+			}
+		}
+	}
+
+	for _, testAliases := range testNamespaceAliases {
+		for _, testAlias := range testAliases {
+			if _, ok := ProdNamespacesByAlias[testAlias]; !ok {
+				if _, ok := StgNamespacesByAlias[testAlias]; !ok {
+					EnvsByAlias[testAlias] = TestEnv
+				}
+			}
+		}
+	}
+
+	for env, contextAliases := range contextEnvAliases {
+		ContextsByEnvAlias[env] = make(map[string]string)
+
+		ContextsByEnvAlias[env][""] = defaultContextsByEnv[env]
+		for context, aliases := range contextAliases {
+			for _, alias := range aliases {
+				ContextsByEnvAlias[env][alias] = context
+			}
 		}
 	}
 }
@@ -269,6 +397,19 @@ var testNamespaceAliases = map[string][]string{
 var ProdNamespacesByAlias = make(map[string]string)
 var StgNamespacesByAlias = make(map[string]string)
 var TestNamespacesByAlias = make(map[string]string)
+
+func inferContextFromNamespace(context string, namespace string) string {
+	if context != "" {
+		return context
+	}
+
+	if env, ok := EnvsByAlias[namespace]; ok {
+		context = ContextsByEnvAlias[env][context]
+	} else if env, ok := EnvsByNamespace[namespace]; ok {
+		context = ContextsByEnvAlias[env][context]
+	}
+	return context
+}
 
 func inferContext(kubecontext string) (string, bool) {
 	contextAlias := strings.ReplaceAll(strings.ToLower(kubecontext), "-", "")

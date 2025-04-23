@@ -46,6 +46,8 @@ func tikvGetCommand() *cli.Command {
 			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 			allNamespaces := cCtx.Bool("all-namespaces")
 
+			context = inferContextFromNamespace(context, namespace)
+
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
@@ -196,6 +198,8 @@ func tikvStoreCommand() *cli.Command {
 			interactive := cCtx.Bool("interactive")
 			debug := cCtx.Bool("debug") && !mdexec.IsPipe()
 			allNamespaces := cCtx.Bool("all-namespaces")
+
+			context = inferContextFromNamespace(context, namespace)
 
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
