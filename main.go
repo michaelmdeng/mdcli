@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/michaelmdeng/mdcli/k8s"
 	"github.com/michaelmdeng/mdcli/rm"
+	"github.com/michaelmdeng/mdcli/scratch"
 	"github.com/michaelmdeng/mdcli/tidb"
 	"github.com/michaelmdeng/mdcli/tmux"
 	"github.com/michaelmdeng/mdcli/wiki"
@@ -36,6 +37,7 @@ func main() {
 			wiki.BaseCommand(),
 			tidb.BaseCommand(),
 			tmux.BaseCommand(),
+			scratch.BaseCommand(), // Add this line
 		},
 	}
 
