@@ -3,6 +3,7 @@ package tidb
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -20,46 +21,37 @@ func BasePdCommand() *cli.Command {
 
 func pdTsoCommand() *cli.Command {
 	return &cli.Command{
-		Name:  "tso",
-		Usage: "Perform TSO/timestamp conversion",
-		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "tso",
-				Value: 0,
-				Usage: "TSO to convert",
-			},
-			&cli.StringFlag{
-				Name:  "ts",
-				Value: "",
-				Usage: "timestamp to convert",
-			},
-		},
+		Name:      "tso",
+		Usage:     "Perform TSO/timestamp conversion. Provide either a TSO (int) or a timestamp (RFC3339 string).",
+		ArgsUsage: "<tso_or_timestamp>",
 		Action: func(cCtx *cli.Context) error {
-			tso := cCtx.Int("tso")
-			ts := cCtx.String("ts")
-			if tso == 0 && ts == "" {
-				return errors.New("one of tso or ts must be provided")
+			if cCtx.NArg() != 1 {
+				return errors.New("exactly one argument (tso or timestamp) must be provided")
 			}
+			input := cCtx.Args().Get(0)
 
-			if tso != 0 && ts != "" {
-				return errors.New("only one of tso or ts can be provided")
-			}
-
-			if tso != 0 {
+			// Try parsing as TSO (integer)
+			tso, err := strconv.ParseInt(input, 10, 64)
+			if err == nil {
+				// Successfully parsed as TSO
 				t := time.Unix(int64((tso/1000)>>18), 0).UTC()
 				ts := t.Format(time.RFC3339)
 				fmt.Println(ts)
-			} else {
-				t, err := time.Parse(time.RFC3339, ts)
-				if err != nil {
-					return err
-				}
-				ts := t.Unix()
-				tso := (ts << 18) * 1000
-				fmt.Println(tso)
+				return nil
 			}
 
-			return nil
+			// Try parsing as timestamp (RFC3339 string)
+			t, err := time.Parse(time.RFC3339, input)
+			if err == nil {
+				// Successfully parsed as timestamp
+				tsUnix := t.Unix()
+				tsoResult := (tsUnix << 18) * 1000
+				fmt.Println(tsoResult)
+				return nil
+			} else {
+				// If both parsing attempts fail, return an error.
+				return cli.Exit(fmt.Sprintf("input '%s' is not a valid TSO (integer) or timestamp (RFC3339): %s", input, err), 1)
+			}
 		},
 	}
 }
