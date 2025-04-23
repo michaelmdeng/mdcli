@@ -63,3 +63,4 @@ tags
 # Ignore build artifacts
 mdcli
 bin/mdcli
+.aider*
