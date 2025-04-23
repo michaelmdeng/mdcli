@@ -163,6 +163,13 @@ func tidbK9sCommand() *cli.Command {
 				return err
 			}
 
+			// Check cellauth login status without printing output
+			err = mdexec.RunCommandDiscardOutput("cellauth", "token", "--region", "us-east-1", context)
+			if err != nil {
+				// Consider logging a more specific error message here if needed
+				return fmt.Errorf("cellauth check failed: %w", err)
+			}
+
 			if debug {
 				colorDebugPrintfln(context, "%s %s", mdk8s.K9s, strings.Join(args, " "))
 			}
