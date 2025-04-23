@@ -2,11 +2,14 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/urfave/cli/v2"
 )
 
 func RunCommand(command string, args ...string) error {
@@ -44,6 +47,21 @@ func RunCommandDiscardOutput(command string, args ...string) error {
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	return cmd.Run()
+}
+
+// ExitError creates cli.Exit errors, extracting exit code from exec.ExitError if possible.
+// Moved from tidb/commands.go
+func ExitError(err error) error {
+	if err == nil {
+		return nil
+	}
+	exitCode := 1 // Default exit code for generic errors
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		exitCode = exitErr.ExitCode()
+	}
+	// Use fmt.Sprintf to ensure we pass a string message to cli.Exit
+	return cli.Exit(fmt.Sprintf("%v", err), exitCode)
 }
 
 func GetConfirmation(s string) bool {

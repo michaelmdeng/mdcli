@@ -1,7 +1,6 @@
 package tidb
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -62,17 +61,17 @@ func tidbSecretCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			rootPass, err := getTidbSecret(context, namespace)
 			if err != nil {
-				return err
+				return cli.Exit(fmt.Sprintf("Failed to get tidb secret: %v", err), 1) 
 			}
 
 			fmt.Print(rootPass)
@@ -104,12 +103,12 @@ func tidbKubectlCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			if isTestTidbContext(context) {
@@ -126,12 +125,12 @@ func tidbKubectlCommand() *cli.Command {
 			if needsConfirm {
 				res := mdexec.GetConfirmation("Do you want to execute the above command?")
 				if !res {
-					fmt.Fprintln(os.Stderr, "Command canceled")
-					return errors.New("Command canceled")
+					return cli.Exit("Command canceled by user", 1)
 				}
 			}
 
-			return mdexec.RunCommand(mdk8s.Kubectl, args...)
+			// Use the helper function for external command errors
+			return mdexec.ExitError(mdexec.RunCommand(mdk8s.Kubectl, args...))
 		},
 	}
 }
@@ -155,25 +154,24 @@ func tidbK9sCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			builder := NewTidbKubeBuilder()
 			args, err := builder.BuildK9sArgs(context, namespace, allNamespaces, cCtx.Args().Slice())
 			if err != nil {
-				return err
+				return cli.Exit(fmt.Sprintf("Failed to build k9s args: %v", err), 1)
 			}
 
 			// Check cellauth login status without printing output
 			err = mdexec.RunCommandDiscardOutput("cellauth", "token", "--region", "us-east-1", context)
 			if err != nil {
-				// Consider logging a more specific error message here if needed
-				return fmt.Errorf("cellauth check failed: %w", err)
+				return cli.Exit(fmt.Sprintf("cellauth check failed: %v", err), 1)
 			}
 
 			if debug {
@@ -181,7 +179,7 @@ func tidbK9sCommand() *cli.Command {
 			}
 
 			_, err = script.Exec(fmt.Sprintf("%s %s", mdk8s.K9s, strings.Join(args, " "))).Stdout()
-			return err
+			return mdexec.ExitError(err)
 		},
 	}
 }
@@ -232,17 +230,17 @@ func tidbMysqlCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			rootPass, err := getTidbSecret(context, namespace)
 			if err != nil {
-				return err
+				return cli.Exit(fmt.Sprintf("Failed to get tidb secret: %v", err), 1)
 			}
 
 			if isTestTidbContext(context) {
@@ -281,11 +279,12 @@ func tidbMysqlCommand() *cli.Command {
 				}
 			}()
 
-			time.Sleep(2 * time.Second)
+			// Wait a bit for port-forward to establish or fail
 			select {
 			case err = <-portForwardErr:
-				return err
-			default:
+				return mdexec.ExitError(fmt.Errorf("port-forward failed: %w", err))
+			case <-time.After(2 * time.Second):
+				// Port forward likely started, continue
 			}
 
 			mysqlArgs := []string{"-h", "127.0.0.1", "-P", fmt.Sprintf("%d", port), "-u", "root", "-p" + rootPass, "--prompt=tidb> "}
@@ -300,7 +299,7 @@ func tidbMysqlCommand() *cli.Command {
 			mysqlCmd.Stdout = os.Stdout
 			mysqlCmd.Stderr = os.Stderr
 			if err = mysqlCmd.Run(); err != nil {
-				return err
+				return mdexec.ExitError(err)
 			}
 
 			return nil
@@ -346,12 +345,12 @@ func tidbDmctlCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
@@ -391,7 +390,7 @@ func tidbDmctlCommand() *cli.Command {
 				colorDebugPrintfln(context, "%s %s", "kubectl", strings.Join(execArgs, " "))
 			}
 
-			return mdexec.RunCommand("kubectl", execArgs...)
+			return mdexec.ExitError(mdexec.RunCommand("kubectl", execArgs...))
 		},
 	}
 }
@@ -427,12 +426,12 @@ func tidbPdctlCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
@@ -457,7 +456,7 @@ func tidbPdctlCommand() *cli.Command {
 				colorDebugPrintfln(context, "%s %s", "kubectl", strings.Join(execArgs, " "))
 			}
 
-			return mdexec.RunCommand("kubectl", execArgs...)
+			return mdexec.ExitError(mdexec.RunCommand("kubectl", execArgs...))
 		},
 	}
 }
@@ -493,12 +492,12 @@ func ticdcCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, _, err = ParseNamespace(namespace, false, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
@@ -523,7 +522,7 @@ func ticdcCommand() *cli.Command {
 				colorDebugPrintfln(context, "%s %s", "kubectl", strings.Join(args, " "))
 			}
 
-			return mdexec.RunCommand("kubectl", args...)
+			return mdexec.ExitError(mdexec.RunCommand("kubectl", args...))
 		},
 	}
 }
