@@ -244,6 +244,14 @@ var prodNamespaceAliases = map[string][]string{
 		"migration",
 		"migrationoperator",
 	},
+	"tidb-uds-prod-alpha": {
+		"alpha",
+		"udsalpha",
+	},
+	"tidb-uds-prod-alpha-dr": {
+		"alphadr",
+		"udsalphadr",
+	},
 }
 
 var stgNamespaceAliases = map[string][]string{
@@ -258,8 +266,19 @@ var stgNamespaceAliases = map[string][]string{
 		"stg",
 		"merge",
 	},
+	"tidb-mussel-stg-v75": {
+		"stg75",
+		"merge75",
+	},
+	"tidb-mussel-stg-v75-dr": {
+		"stg75dr",
+		"merge75dr",
+	},
 	"tidb-mussel-stg-dr": {
 		"mergedr",
+	},
+	"tidb-release-production": {
+		"release",
 	},
 	"tidb-restore-operator-stg": {
 		"restore",
@@ -284,6 +303,61 @@ var stgNamespaceAliases = map[string][]string{
 	"tidb-uds-shadow-stg": {
 		"udsshadow",
 		"shadow",
+	},
+	"tidb-uds-seed-stg": {
+		"seed",
+		"udseed",
+	},
+	"tidb-uds-stg-alpha-bl": {
+		"stagingalphablue",
+		"stagingalphabl",
+		"stagingalblue",
+		"stagingalbl",
+		"stgalphablue",
+		"stgalphabl",
+		"stgalblue",
+		"stgalbl",
+	},
+	"tidb-uds-stg-alpha-gr": {
+		"testingalphagreen",
+		"testingalphagr",
+		"testingalgreen",
+		"testingalgr",
+		"testalphagreen",
+		"testalphagr",
+		"testalgreen",
+		"testalgr",
+	},
+	"tidb-uds-test-alpha-bl": {
+		"alpha",
+		"alphablue",
+		"alphabl",
+		"alblue",
+		"albl",
+		"testalpha",
+		"testalphablue",
+		"testalphabl",
+		"testalblue",
+		"testalbl",
+		"testingalpha",
+		"testingalphablue",
+		"testingalphabl",
+		"testingalblue",
+		"testingalbl",
+	},
+	"tidb-uds-test-alpha-gr": {
+		"alphagreen",
+		"alphagr",
+		"algreen",
+		"algr",
+		"testalphagreen",
+		"testalphagr",
+		"testalgreen",
+		"testalgr",
+		"testingalphagreen",
+		"testingalphagr",
+		"testingalgreen",
+		"testingalgr",
 	},
 	"tidb-ingestion-staging": {
 		"ingestion",
@@ -331,6 +405,11 @@ var testNamespaceAliases = map[string][]string{
 	"tidb-rp-mussel-func-test-br-2": {
 		"rprestore2",
 		"rpbr2",
+	},
+	"tidb-rp-mussel-load-test": {
+		"rpload",
+		"rpmussload",
+		"rpmusselload",
 	},
 	"tidb-rp-func-test-2": {
 		"rp2",
