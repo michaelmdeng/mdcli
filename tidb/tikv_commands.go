@@ -58,17 +58,23 @@ func tikvGetCommand() *cli.Command {
 			}
 
 			tikvName := cCtx.Args().Get(0)
+			if tikvName == "" {
+				return cli.Exit("tikv name is required", 1)
+			}
 			clusterName := strings.TrimPrefix(namespace, "tidb-")
 			tikvName = strings.TrimPrefix(tikvName, clusterName+"-")
 			tikvName = strings.TrimPrefix(tikvName, "tikv-")
 			tikvNum := tikvName
 			tikvName = fmt.Sprintf("%s-tikv-%s", clusterName, tikvName)
 
+			tikvOutput := map[string]any{}
+			tikvOutput["name"] = tikvName
+
 			builder := NewTidbKubeBuilder()
 			args, _ := builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "tc", clusterName, "-o", "jsonpath='{.status.tikv.stores}'"})
 
 			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				colorDebugPrintfln(context, "%s %s", mdk8s.Kubectl, strings.Join(args, " "))
 			}
 
 			output, err := mdexec.CaptureCommand(mdk8s.Kubectl, args...)
@@ -93,6 +99,7 @@ func tikvGetCommand() *cli.Command {
 					}
 				}
 			}
+			tikvOutput["storeId"] = storeId
 
 			dataPvc := fmt.Sprintf("tikv-%s-tikv-%v", clusterName, tikvNum)
 			walPvc := fmt.Sprintf("tikv-wal-%s-tikv-%v", clusterName, tikvNum)
@@ -101,7 +108,7 @@ func tikvGetCommand() *cli.Command {
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pvc", dataPvc, walPvc, raftPvc, "-o", "jsonpath='{.items[*].spec.volumeName}'"})
 
 			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				colorDebugPrintfln(context, "%s %s", mdk8s.Kubectl, strings.Join(args, " "))
 			}
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
@@ -113,46 +120,38 @@ func tikvGetCommand() *cli.Command {
 			walPv := pvs[1]
 			raftPv := pvs[2]
 
-			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", dataPv, "-o", "jsonpath='{.spec.csi.volumeHandle}'"})
-
+			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", dataPv, walPv, raftPv, "-o", `jsonpath='{range .items[*]}{"{\""}{.metadata.name}{"\":\""}{.spec.csi.volumeHandle}{"\"}\n"}{end}'`})
 			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				colorDebugPrintfln(context, "%s %s", mdk8s.Kubectl, strings.Join(args, " "))
 			}
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
 				return err
 			}
-			dataVol := output[1 : len(output)-1]
-
-			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", walPv, "-o", "jsonpath='{.spec.csi.volumeHandle}'"})
-
-			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+			// Trim enclosing quotes and whitespace
+			output = strings.TrimSpace(output[1 : len(output)-1])
+			var pvHandle map[string]string
+			for _, line := range strings.Split(output, "\n") {
+				err = json.Unmarshal([]byte(line), &pvHandle)
+				if err != nil {
+					return cli.Exit(err.Error(), 1)
+				}
+				for pv, handle := range pvHandle {
+					if pv == dataPv {
+						tikvOutput["dataVol"] = handle
+					} else if pv == walPv {
+						tikvOutput["walVol"] = handle
+					} else if pv == raftPv {
+						tikvOutput["raftVol"] = handle
+					}
+				}
 			}
-
-			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
-			if err != nil {
-				return err
-			}
-			walVol := output[1 : len(output)-1]
-
-			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pv", raftPv, "-o", "jsonpath='{.spec.csi.volumeHandle}'"})
-
-			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
-			}
-
-			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
-			if err != nil {
-				return err
-			}
-			raftVol := output[1 : len(output)-1]
 
 			args, _ = builder.BuildKubectlArgs(context, namespace, allNamespaces, false, []string{"get", "pod", tikvName, "-o", "jsonpath='{.spec.nodeName}'"})
 
 			if debug {
-				fmt.Println(fmt.Sprintf("%s %s", mdk8s.Kubectl, strings.Join(args, " ")))
+				colorDebugPrintfln(context, "%s %s", mdk8s.Kubectl, strings.Join(args, " "))
 			}
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
@@ -172,15 +171,7 @@ func tikvGetCommand() *cli.Command {
 				return err
 			}
 			instanceId := output[1 : len(output)-1]
-
-			tikvOutput := map[string]any{
-				"name":       tikvName,
-				"storeId":    storeId,
-				"instanceId": instanceId,
-				"dataVol":    dataVol,
-				"walVol":     walVol,
-				"raftVol":    raftVol,
-			}
+			tikvOutput["instanceId"] = instanceId
 
 			out, err := json.Marshal(tikvOutput)
 			if err != nil {
