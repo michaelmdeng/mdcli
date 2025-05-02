@@ -44,8 +44,9 @@ func CaptureCmd(cmd exec.Cmd) (string, error) {
 
 func RunCommandDiscardOutput(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = io.Discard
-	cmd.Stderr = io.Discard
+	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 

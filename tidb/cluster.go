@@ -306,7 +306,7 @@ var stgNamespaceAliases = map[string][]string{
 	},
 	"tidb-uds-seed-stg": {
 		"seed",
-		"udseed",
+		"udsseed",
 	},
 	"tidb-uds-stg-alpha-bl": {
 		"stagingalphablue",
@@ -479,7 +479,10 @@ var TestNamespacesByAlias = make(map[string]string)
 
 func inferContextFromNamespace(context string, namespace string) string {
 	if context != "" {
-		return context
+		inferredContext, inferred := inferContext(context)
+		if inferred {
+			return inferredContext
+		}
 	}
 
 	if env, ok := EnvsByAlias[namespace]; ok {
