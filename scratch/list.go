@@ -3,52 +3,101 @@ package scratch
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath" // Add this import
+	"strings"
 
-	"github.com/bitfield/script"
-	"github.com/fatih/color"
+	"github.com/michaelmdeng/mdcli/internal/cmd"
 	"github.com/michaelmdeng/mdcli/internal/config"
 	"github.com/urfave/cli/v2"
 )
 
 func listAction(cCtx *cli.Context) error {
-	// Retrieve config from App Metadata
-	cfgInterface, ok := cCtx.App.Metadata["config"]
-	if !ok {
-		// This should ideally not happen if main.go sets it up correctly
-		return fmt.Errorf("configuration not found in application metadata")
-	}
-	cfg, ok := cfgInterface.(config.Config)
-	if !ok {
-		// This indicates a programming error (wrong type stored)
-		return fmt.Errorf("invalid configuration type in application metadata")
+	var scratchPath string
+	// Check if the flag is set
+	if cCtx.IsSet("scratch-path") {
+		scratchPath = cCtx.String("scratch-path")
+	} else {
+		// Retrieve config from App Metadata if flag is not set
+		cfgInterface, ok := cCtx.App.Metadata["config"]
+		if !ok {
+			// This should ideally not happen if main.go sets it up correctly
+			return fmt.Errorf("configuration not found in application metadata")
+		}
+		cfg, ok := cfgInterface.(config.Config)
+		if !ok {
+			// This indicates a programming error (wrong type stored)
+			return fmt.Errorf("invalid configuration type in application metadata")
+		}
+		scratchPath = cfg.Scratch.ScratchPath // Get the scratch path from config
 	}
 
-	scratchCfg := cfg.Scratch // Get the scratch specific config
+	// Check if scratch path is determined
+	if scratchPath == "" {
+		return fmt.Errorf("scratch path not configured. Please set 'scratch_path' in your config file or use the --scratch-path flag")
+	}
 
-	// Check if scratch path is configured
-	if scratchCfg.ScratchPath == "" {
-		return fmt.Errorf("scratch path not configured. Please set 'scratch_path' in your config file")
+	// Ensure scratchPath is absolute for consistent output
+	absScratchPath, err := filepath.Abs(scratchPath)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for scratch directory '%s': %w", scratchPath, err)
 	}
 
 	// Check if the directory exists
-	if _, err := os.Stat(scratchCfg.ScratchPath); os.IsNotExist(err) {
-		return fmt.Errorf("scratch directory '%s' does not exist", scratchCfg.ScratchPath)
+	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
+		return fmt.Errorf("scratch directory '%s' does not exist", absScratchPath)
 	}
 
-	// List files using script package
-	fmt.Printf("Listing files in %s:\n", color.CyanString(scratchCfg.ScratchPath))
-	_, err := script.ListFiles(scratchCfg.ScratchPath).Stdout()
+	// Command to list only directories directly under scratchPath
+	// -maxdepth 1: Don't go into subdirectories
+	// -mindepth 1: Don't include '.' itself
+	// -type d: Only list directories
+	// -printf '%f\n': Print only the basename (directory name) followed by a newline
+	listDirsCmd := `find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n'`
+
+	// Prepare fzf command
+	fzfCmd := exec.Command("fzf", "--ansi", "--no-preview", "--prompt", "Select Scratch Directory> ")
+	fzfCmd.Dir = absScratchPath // Run the find command inside the scratch directory
+	fzfCmd.Stdin = os.Stdin     // Inherit standard input
+	fzfCmd.Stderr = os.Stderr    // Inherit standard error
+
+	// Set the FZF_DEFAULT_COMMAND environment variable
+	fzfCmd.Env = append(os.Environ(),
+		fmt.Sprintf("FZF_DEFAULT_COMMAND=%s", listDirsCmd),
+	)
+
+	// Capture the selected directory name (relative path/basename)
+	selectedRelativeDir, err := cmd.CaptureCmd(*fzfCmd)
 	if err != nil {
-		return fmt.Errorf("failed to list files in scratch directory: %w", err)
+		// cmd.CaptureCmd returns error if fzf exits non-zero (e.g., Esc pressed)
+		// or if the command fails. Check if output is empty which usually means no selection.
+		if strings.TrimSpace(selectedRelativeDir) == "" {
+			return fmt.Errorf("no directory selected")
+		}
+		return fmt.Errorf("failed to run fzf: %w", err)
 	}
+
+	// Trim whitespace and construct the full absolute path
+	trimmedSelectedDir := strings.TrimSpace(selectedRelativeDir)
+	fullPath := filepath.Join(absScratchPath, trimmedSelectedDir)
+
+	// Print the full absolute path
+	fmt.Println(fullPath)
 
 	return nil
 }
 
 // listCommand defines the 'list' subcommand for scratch.
+// listCommand defines the 'list' subcommand for scratch.
 var listCommand = &cli.Command{
-	Name:   "list",
+	Name:    "list",
 	Aliases: []string{"ls"},
-	Usage:  "List files in the scratch directory",
+	Usage:   "Interactively list and select a directory in the scratch path",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "scratch-path",
+			Usage: "Override the scratch path from config",
+		},
+	},
 	Action: listAction,
 }

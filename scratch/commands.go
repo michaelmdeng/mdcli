@@ -15,7 +15,7 @@ func BaseCommand() *cli.Command {
 		Aliases:     []string{"s"},
 		Usage:       scratchUsage,
 		Subcommands: []*cli.Command{
-			// Add scratch subcommands here
+			listCommand,
 		},
 	}
 }
