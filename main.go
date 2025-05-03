@@ -1,9 +1,10 @@
 package main
 
 import (
-	"os"
+	"os" // Keep os for os.Args
 
 	"github.com/fatih/color"
+	"github.com/michaelmdeng/mdcli/internal/config"
 	"github.com/michaelmdeng/mdcli/k8s"
 	"github.com/michaelmdeng/mdcli/rm"
 	"github.com/michaelmdeng/mdcli/scratch"
@@ -20,7 +21,12 @@ const (
 func main() {
 	color.NoColor = false
 
+	cfg := config.LoadConfig()
 	app := &cli.App{
+		// Store config in Metadata for subcommands to access
+		Metadata: map[string]interface{}{
+			"config": cfg,
+		},
 		EnableBashCompletion: true,
 		Name:                 "mdcli",
 		Usage:                "Personal CLI",

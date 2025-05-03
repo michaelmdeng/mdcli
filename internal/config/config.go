@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
@@ -40,4 +42,25 @@ func NewConfigFromToml(filePath string) (Config, error) {
 	}
 
 	return config, nil
+}
+
+// LoadConfig loads configuration from a standard path or returns default.
+func LoadConfig() Config {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not get user home directory: %v\n", err)
+		return NewConfig() // Return default if home dir fails
+	}
+	configPath := filepath.Join(home, ".config", "mdcli", "config.toml")
+
+	cfg, err := NewConfigFromToml(configPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			// Only warn if it's not a "file not found" error
+			fmt.Fprintf(os.Stderr, "Warning: failed to load config from %s: %v\n", configPath, err)
+		}
+		// Return default config if file doesn't exist or fails to parse
+		return NewConfig()
+	}
+	return cfg
 }
