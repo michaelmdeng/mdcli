@@ -3,6 +3,7 @@ module github.com/michaelmdeng/mdcli
 go 1.21.13
 
 require (
+	github.com/BurntSushi/toml v1.4.0
 	github.com/bitfield/script v0.22.0
 	github.com/fatih/color v1.18.0
 	github.com/urfave/cli/v2 v2.27.5
