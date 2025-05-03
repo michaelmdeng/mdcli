@@ -64,3 +64,4 @@ tags
 mdcli
 bin/mdcli
 .aider*
+.env
