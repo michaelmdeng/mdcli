@@ -21,9 +21,15 @@ type Config struct {
 }
 
 func NewConfig() Config {
+	homeDir, err := os.UserHomeDir()
+	defaultScratchPath := "" // Default to empty if home dir cannot be found
+	if err == nil {
+		defaultScratchPath = filepath.Join(homeDir, "Source", "scratch")
+	}
+
 	return Config{
 		EnableClusterAdminForTest: true,
-		Scratch:                   ScratchConfig{}, // Initialize with zero values (empty path)
+		Scratch:                   ScratchConfig{ScratchPath: defaultScratchPath},
 	}
 }
 
