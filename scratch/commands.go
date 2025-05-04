@@ -17,6 +17,7 @@ func BaseCommand() *cli.Command {
 		Subcommands: []*cli.Command{
 			newCommand,
 			listCommand,
+			tmuxCommand,
 		},
 	}
 }
