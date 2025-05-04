@@ -2,7 +2,6 @@ package scratch
 
 import (
 	"fmt"
-	"fmt"
 	"os"
 	"path/filepath"
 

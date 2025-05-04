@@ -68,3 +68,32 @@ func findScratchDirectory(scratchPath, name string) (string, error) {
 
 	return "", nil // No match found
 }
+
+// createScratchDirectory creates a new dated directory within the scratch path.
+// It formats the name as YYYY-MM-DD-name and creates the directory.
+// Returns the full path of the created directory or an error.
+func createScratchDirectory(scratchPath, name string) (string, error) {
+	// Format the new directory name
+	today := time.Now().Format("2006-01-02")
+	newDirName := fmt.Sprintf("%s-%s", today, name)
+	// Note: scratchPath is expected to be absolute already by the callers
+	newDirPath := filepath.Join(scratchPath, newDirName)
+
+	// Double-check if it already exists (mitigate race conditions)
+	// Although findScratchDirectory in the callers should prevent this call if it exists.
+	if _, err := os.Stat(newDirPath); !os.IsNotExist(err) {
+		if err == nil {
+			// Directory surprisingly exists
+			return "", fmt.Errorf("directory '%s' already exists unexpectedly", newDirPath)
+		}
+		// Other stat error
+		return "", fmt.Errorf("failed to check directory status '%s': %w", newDirPath, err)
+	}
+
+	// Create the new directory
+	if err := os.Mkdir(newDirPath, 0755); err != nil {
+		return "", fmt.Errorf("failed to create directory '%s': %w", newDirPath, err)
+	}
+
+	return newDirPath, nil
+}
