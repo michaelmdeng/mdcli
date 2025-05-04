@@ -131,7 +131,7 @@ func tmuxAction(cCtx *cli.Context) error {
 
 	if targetDir == "" {
 		// Not found, create it using the utility function
-		newDirPath, err := createScratchDirectory(absScratchPath, name)
+		newDirPath, err := createScratchDirectory(absScratchPath, name, true) // Pass true for createReadme
 		if err != nil {
 			// createScratchDirectory already provides a descriptive error
 			return cli.Exit(err.Error(), 1)

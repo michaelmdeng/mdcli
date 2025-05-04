@@ -71,8 +71,9 @@ func findScratchDirectory(scratchPath, name string) (string, error) {
 
 // createScratchDirectory creates a new dated directory within the scratch path.
 // It formats the name as YYYY-MM-DD-name and creates the directory.
+// If createReadme is true, it also creates an empty README.md file inside.
 // Returns the full path of the created directory or an error.
-func createScratchDirectory(scratchPath, name string) (string, error) {
+func createScratchDirectory(scratchPath, name string, createReadme bool) (string, error) {
 	// Format the new directory name
 	today := time.Now().Format("2006-01-02")
 	newDirName := fmt.Sprintf("%s-%s", today, name)
@@ -93,6 +94,17 @@ func createScratchDirectory(scratchPath, name string) (string, error) {
 	// Create the new directory
 	if err := os.Mkdir(newDirPath, 0755); err != nil {
 		return "", fmt.Errorf("failed to create directory '%s': %w", newDirPath, err)
+	}
+
+	// Create README.md if requested
+	if createReadme {
+		readmePath := filepath.Join(newDirPath, "README.md")
+		file, err := os.Create(readmePath)
+		if err != nil {
+			// Return error, but the directory was already created. Maybe log this?
+			return newDirPath, fmt.Errorf("directory created, but failed to create README.md: %w", err)
+		}
+		file.Close() // Close the empty file
 	}
 
 	return newDirPath, nil
