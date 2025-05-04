@@ -131,7 +131,8 @@ func tmuxAction(cCtx *cli.Context) error {
 
 	if targetDir == "" {
 		// Not found, create it using the utility function
-		newDirPath, err := createScratchDirectory(absScratchPath, name, true) // Pass true for createReadme
+		createReadme := cCtx.Bool("create-readme")
+		newDirPath, err := createScratchDirectory(absScratchPath, name, createReadme)
 		if err != nil {
 			// createScratchDirectory already provides a descriptive error
 			return cli.Exit(err.Error(), 1)
@@ -176,6 +177,12 @@ var tmuxCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:  "tmuxinator-template",
 			Usage: "Override the tmuxinator template path from config",
+		},
+		&cli.BoolFlag{
+			Name:    "create-readme",
+			Aliases: []string{"r"},
+			Usage:   "Create an empty README.md if a new directory is created",
+			Value:   true, // Default to true
 		},
 	},
 	Action: tmuxAction,
