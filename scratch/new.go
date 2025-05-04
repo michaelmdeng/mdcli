@@ -2,9 +2,9 @@ package scratch
 
 import (
 	"fmt"
+	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/michaelmdeng/mdcli/internal/config"
 	"github.com/urfave/cli/v2"
@@ -59,17 +59,16 @@ func newAction(cCtx *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("error checking for existing directory '%s': %v", name, err), 1)
 	}
 	if existingPath != "" {
+		// A directory matching the name (exact or suffix) already exists.
+		// findScratchDirectory returns the full path.
 		return cli.Exit(fmt.Sprintf("directory matching name '%s' already exists: %s", name, existingPath), 1)
 	}
 
-	// Format the new directory name
-	today := time.Now().Format("2006-01-02")
-	newDirName := fmt.Sprintf("%s-%s", today, name)
-	newDirPath := filepath.Join(absScratchPath, newDirName)
-
-	// Create the new directory
-	if err := os.Mkdir(newDirPath, 0755); err != nil {
-		return cli.Exit(fmt.Sprintf("failed to create directory '%s': %v", newDirPath, err), 1)
+	// Create the new directory using the utility function
+	newDirPath, err := createScratchDirectory(absScratchPath, name)
+	if err != nil {
+		// createScratchDirectory already provides a descriptive error
+		return cli.Exit(err.Error(), 1)
 	}
 
 	// Print the full path of the created directory

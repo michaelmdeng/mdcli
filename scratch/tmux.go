@@ -2,10 +2,10 @@ package scratch
 
 import (
 	"fmt"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/michaelmdeng/mdcli/internal/cmd"
 	"github.com/michaelmdeng/mdcli/internal/config"
@@ -130,37 +130,20 @@ func tmuxAction(cCtx *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("error finding scratch directory: %v", err), 1)
 	}
 
-	projectName := ""
 	if targetDir == "" {
-		// Not found, create it
-		today := time.Now().Format("2006-01-02")
-		newDirName := fmt.Sprintf("%s-%s", today, name)
-		newDirPath := filepath.Join(absScratchPath, newDirName)
-
-		// Check again for existing directory with the exact new name (race condition mitigation)
-		if _, err := os.Stat(newDirPath); !os.IsNotExist(err) {
-			// Directory already exists (or other error), use it instead of failing Mkdir
-			if err == nil {
-				targetDir = newDirPath
-				projectName = newDirName
-				fmt.Fprintf(os.Stderr, "Warning: directory '%s' already existed, using it.\n", newDirPath)
-			} else {
-				return cli.Exit(fmt.Sprintf("failed to check existing directory '%s': %v", newDirPath, err), 1)
-			}
-		} else {
-			// Proceed with creation
-			if err := os.Mkdir(newDirPath, 0755); err != nil {
-				return cli.Exit(fmt.Sprintf("failed to create directory '%s': %v", newDirPath, err), 1)
-			}
-			fmt.Printf("Created scratch directory: %s\n", newDirPath)
-			targetDir = newDirPath
-			projectName = newDirName
+		// Not found, create it using the utility function
+		newDirPath, err := createScratchDirectory(absScratchPath, name)
+		if err != nil {
+			// createScratchDirectory already provides a descriptive error
+			return cli.Exit(err.Error(), 1)
 		}
+		fmt.Printf("Created scratch directory: %s\n", newDirPath)
+		targetDir = newDirPath
+		// No need to check for existing again, createScratchDirectory handles it
 	}
 
-	if projectName == "" {
-		projectName = filepath.Base(targetDir)
-	}
+	// Determine the project name from the final target directory path
+	projectName := filepath.Base(targetDir)
 
 	// --- Generate Tmuxinator Config ---
 	tmpConfigPath, err := generateTmuxinatorConfig(tmuxinatorTemplate, projectName, targetDir)
