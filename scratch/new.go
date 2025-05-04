@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/michaelmdeng/mdcli/internal/config"
@@ -54,16 +53,13 @@ func newAction(cCtx *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("failed to check scratch directory '%s': %v", absScratchPath, err), 1)
 	}
 
-	// Check for existing directory with the same name suffix
-	suffixToCheck := "-" + name
-	entries, err := os.ReadDir(absScratchPath)
+	// Check for existing directory matching the name (exact or suffix)
+	existingPath, err := findScratchDirectory(absScratchPath, name)
 	if err != nil {
-		return cli.Exit(fmt.Sprintf("failed to read scratch directory '%s': %v", absScratchPath, err), 1)
+		return cli.Exit(fmt.Sprintf("error checking for existing directory '%s': %v", name, err), 1)
 	}
-	for _, entry := range entries {
-		if entry.IsDir() && strings.HasSuffix(entry.Name(), suffixToCheck) {
-			return cli.Exit(fmt.Sprintf("directory with name suffix '%s' already exists: %s", suffixToCheck, filepath.Join(absScratchPath, entry.Name())), 1)
-		}
+	if existingPath != "" {
+		return cli.Exit(fmt.Sprintf("directory matching name '%s' already exists: %s", name, existingPath), 1)
 	}
 
 	// Format the new directory name
