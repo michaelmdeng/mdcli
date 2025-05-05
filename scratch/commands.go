@@ -11,9 +11,9 @@ const (
 // BaseCommand returns the base command for the scratch subcommand.
 func BaseCommand() *cli.Command {
 	return &cli.Command{
-		Name:        "scratch",
-		Aliases:     []string{"s"},
-		Usage:       scratchUsage,
+		Name:    "scratch",
+		Aliases: []string{"s"},
+		Usage:   scratchUsage,
 		Subcommands: []*cli.Command{
 			newCommand,
 			listCommand,

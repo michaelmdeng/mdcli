@@ -128,7 +128,6 @@ func listScratchDirectories(scratchPath string) ([]string, error) {
 		return nil, fmt.Errorf("failed to check scratch directory '%s': %w", absScratchPath, err)
 	}
 
-
 	entries, err := os.ReadDir(absScratchPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read scratch directory '%s': %w", absScratchPath, err)

@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	ProdEnv  = "prod"
-	StgEnv   = "stg"
-	TestEnv  = "test"
+	ProdEnv = "prod"
+	StgEnv  = "stg"
+	TestEnv = "test"
 )
 
 var defaultContextsByEnv map[string]string = map[string]string{

@@ -71,7 +71,7 @@ func tidbSecretCommand() *cli.Command {
 
 			rootPass, err := getTidbSecret(context, namespace)
 			if err != nil {
-				return cli.Exit(fmt.Sprintf("Failed to get tidb secret: %v", err), 1) 
+				return cli.Exit(fmt.Sprintf("Failed to get tidb secret: %v", err), 1)
 			}
 
 			fmt.Print(rootPass)

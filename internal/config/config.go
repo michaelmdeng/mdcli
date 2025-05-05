@@ -24,7 +24,7 @@ type Config struct {
 
 func NewConfig() Config {
 	homeDir, err := os.UserHomeDir()
-	defaultScratchPath := ""         // Default to empty if home dir cannot be found
+	defaultScratchPath := ""        // Default to empty if home dir cannot be found
 	defaultTmuxinatorTemplate := "" // Default to empty if home dir cannot be found
 
 	if err == nil {

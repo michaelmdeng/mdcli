@@ -73,7 +73,7 @@ func listAction(cCtx *cli.Context) error {
 		fzfCmd := exec.Command("fzf", "--tac", "--ansi", "--no-preview", "--prompt", "Select Scratch Directory> ")
 		// No need to set fzfCmd.Dir as we provide absolute paths later
 		fzfCmd.Stdin = strings.NewReader(dirListString) // Pipe the directory list to fzf
-		fzfCmd.Stderr = os.Stderr                      // Inherit standard error
+		fzfCmd.Stderr = os.Stderr                       // Inherit standard error
 
 		// Capture the selected directory name (basename)
 		selectedBaseName, err := cmd.CaptureCmd(*fzfCmd)

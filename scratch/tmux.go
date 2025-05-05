@@ -122,7 +122,6 @@ func tmuxAction(cCtx *cli.Context) error {
 		return cli.Exit("tmuxinator template path not configured", 1)
 	}
 
-
 	// --- Find or Create Directory ---
 	targetDir, err := findScratchDirectory(absScratchPath, name)
 	if err != nil {
