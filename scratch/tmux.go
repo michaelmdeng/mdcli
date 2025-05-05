@@ -83,9 +83,10 @@ func tmuxAction(cCtx *cli.Context) error {
 	if scratchPath == "" {
 		return cli.Exit("scratch path not configured", 1)
 	}
-	absScratchPath, err := filepath.Abs(scratchPath)
+	absScratchPath, err := expandPath(scratchPath) // Use the new helper
 	if err != nil {
-		return cli.Exit(fmt.Sprintf("failed to get absolute path for scratch directory '%s': %v", scratchPath, err), 1)
+		// expandPath provides a formatted error
+		return cli.Exit(err.Error(), 1)
 	}
 	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
 		return cli.Exit(fmt.Sprintf("scratch directory '%s' does not exist", absScratchPath), 1)

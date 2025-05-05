@@ -38,10 +38,11 @@ func newAction(cCtx *cli.Context) error {
 		return cli.Exit("scratch path not configured. Please set 'scratch_path' in your config file or use the --scratch-path flag", 1)
 	}
 
-	// Ensure scratchPath is absolute
-	absScratchPath, err := filepath.Abs(scratchPath)
+	// Ensure scratchPath is absolute and expand ~
+	absScratchPath, err := expandPath(scratchPath) // Use the new helper
 	if err != nil {
-		return cli.Exit(fmt.Sprintf("failed to get absolute path for scratch directory '%s': %v", scratchPath, err), 1)
+		// expandPath provides a formatted error
+		return cli.Exit(err.Error(), 1)
 	}
 
 	// Check if the base scratch directory exists

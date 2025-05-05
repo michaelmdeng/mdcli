@@ -10,6 +10,37 @@ import (
 	"time"
 )
 
+// expandPath expands ~ and returns an absolute path.
+// It takes a path string which might start with ~/, ~/ or be relative/absolute.
+// It returns the absolute path or an error if the home directory cannot be determined.
+func expandPath(path string) (string, error) {
+	if strings.HasPrefix(path, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("could not get user home directory: %w", err)
+		}
+		// Handle cases like "~" or "~/..."
+		if path == "~" {
+			path = home
+		} else if strings.HasPrefix(path, "~/") {
+			path = filepath.Join(home, strings.TrimPrefix(path, "~/"))
+		} else {
+			// If it's just "~something", treat it relative to CWD after this point,
+			// which filepath.Abs will handle. This case is less common for config paths.
+			// Or, alternatively, decide if "~something" without a slash should also be relative to home.
+			// Let's assume for now it's not relative to home unless followed by /.
+			// If needed, add: path = filepath.Join(home, strings.TrimPrefix(path, "~"))
+		}
+	}
+
+	// Make the path absolute if it's not already
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path for '%s': %w", path, err)
+	}
+	return absPath, nil
+}
+
 // findScratchDirectory searches for a directory matching the name within the scratch path.
 // It leverages listScratchDirectories and then checks for exact matches (YYYY-MM-DD-name)
 // and suffix matches (-name) among the valid scratch directories.
