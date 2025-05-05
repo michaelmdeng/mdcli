@@ -3,7 +3,6 @@ package scratch
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/michaelmdeng/mdcli/internal/config"
 	"github.com/urfave/cli/v2"
