@@ -13,3 +13,8 @@ fmt:
 .PHONY: test
 test:
 	go test ./...
+
+
+.PHONY: aider
+aider:
+	uv tool run --from aider-chat aider --conf ~/.aider.conf.yaml $(filter-out $@,$(MAKECMDGOALS))
