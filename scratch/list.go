@@ -45,56 +45,64 @@ func listAction(cCtx *cli.Context) error {
 		return fmt.Errorf("failed to get absolute path for scratch directory '%s': %w", scratchPath, err)
 	}
 
-	// Check if the directory exists
-	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
-		return fmt.Errorf("scratch directory '%s' does not exist", absScratchPath)
+	// Use the utility function to list valid scratch directories (full paths)
+	directories, err := listScratchDirectories(absScratchPath)
+	if err != nil {
+		// listScratchDirectories handles checking if the base path exists and other read errors
+		return fmt.Errorf("failed to list scratch directories: %w", err)
 	}
 
 	if interactive {
 		// Interactive mode: Use fzf to select a directory
-		// Command to list only directories directly under scratchPath for fzf
-		// -maxdepth 1: Don't go into subdirectories
-		// -mindepth 1: Don't include '.' itself
-		// -type d: Only list directories
-		// -printf '%f\n': Print only the basename (directory name) followed by a newline
-		listDirsCmd := `find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n'`
+
+		// If no directories are found, exit early
+		if len(directories) == 0 {
+			fmt.Println("No matching scratch directories found.")
+			return nil
+		}
+
+		// Generate the list of directory basenames for fzf
+		var dirListBuilder strings.Builder
+		for _, fullPath := range directories {
+			dirListBuilder.WriteString(filepath.Base(fullPath)) // Use basename for fzf list
+			dirListBuilder.WriteString("\n")
+		}
+		dirListString := dirListBuilder.String()
 
 		// Prepare fzf command
-		fzfCmd := exec.Command("fzf", "--ansi", "--no-preview", "--prompt", "Select Scratch Directory> ")
-		fzfCmd.Dir = absScratchPath // Run the find command inside the scratch directory
-		fzfCmd.Stdin = os.Stdin     // Inherit standard input
-		fzfCmd.Stderr = os.Stderr    // Inherit standard error
+		fzfCmd := exec.Command("fzf", "--tac", "--ansi", "--no-preview", "--prompt", "Select Scratch Directory> ")
+		// No need to set fzfCmd.Dir as we provide absolute paths later
+		fzfCmd.Stdin = strings.NewReader(dirListString) // Pipe the directory list to fzf
+		fzfCmd.Stderr = os.Stderr                      // Inherit standard error
 
-		// Set the FZF_DEFAULT_COMMAND environment variable
-		fzfCmd.Env = append(os.Environ(),
-			fmt.Sprintf("FZF_DEFAULT_COMMAND=%s", listDirsCmd),
-		)
-
-		// Capture the selected directory name (relative path/basename)
-		selectedRelativeDir, err := cmd.CaptureCmd(*fzfCmd)
+		// Capture the selected directory name (basename)
+		selectedBaseName, err := cmd.CaptureCmd(*fzfCmd)
 		if err != nil {
 			// cmd.CaptureCmd returns error if fzf exits non-zero (e.g., Esc pressed)
 			// or if the command fails. Check if output is empty which usually means no selection.
-			if strings.TrimSpace(selectedRelativeDir) == "" {
+			if strings.TrimSpace(selectedBaseName) == "" {
+				// User likely pressed Esc or Ctrl+C in fzf
 				return fmt.Errorf("no directory selected")
 			}
 			return fmt.Errorf("failed to run fzf: %w", err)
 		}
 
-		// Trim whitespace and construct the full absolute path
-		trimmedSelectedDir := strings.TrimSpace(selectedRelativeDir)
-		fullPath := filepath.Join(absScratchPath, trimmedSelectedDir)
+		// Trim whitespace and construct the full absolute path using the base scratch path
+		trimmedSelectedBaseName := strings.TrimSpace(selectedBaseName)
+		fullPath := filepath.Join(absScratchPath, trimmedSelectedBaseName)
 
 		// Print the full absolute path
 		fmt.Println(fullPath)
 	} else {
-		// Non-interactive mode: List directories directly to stdout
-		listCmd := exec.Command("find", ".", "-maxdepth", "1", "-mindepth", "1", "-type", "d", "-printf", "%f\n")
-		listCmd.Dir = absScratchPath
-		listCmd.Stdout = os.Stdout // Pipe output directly to standard out
-		listCmd.Stderr = os.Stderr // Pipe errors directly to standard error
-		if err := listCmd.Run(); err != nil {
-			return fmt.Errorf("failed to list directories in '%s': %w", absScratchPath, err)
+		// Non-interactive mode: List directory basenames directly to stdout
+
+		if len(directories) == 0 {
+			// Print nothing if no directories found, consistent with `ls` behavior
+			return nil
+		}
+
+		for _, fullPath := range directories {
+			fmt.Println(filepath.Base(fullPath)) // Print only the directory basename
 		}
 	}
 
@@ -105,7 +113,7 @@ func listAction(cCtx *cli.Context) error {
 var listCommand = &cli.Command{
 	Name:    "list",
 	Aliases: []string{"ls"},
-	Usage:   "List directories in the scratch path. Interactively select one if --interactive is set.",
+	Usage:   "List directories matching YYYY-MM-DD-<name> in the scratch path. Interactively select one if --interactive is set.", // Updated usage
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "scratch-path",
