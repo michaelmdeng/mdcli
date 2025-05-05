@@ -84,7 +84,7 @@ func GetContextInteractive(pattern string) (string, error) {
 	} else {
 		contextCmd = "yq eval '.contexts[].name' /Users/michael_deng/.kube/config"
 	}
-	c := exec.Command("fzf", "--ansi", "--no-preview")
+	c := exec.Command("fzf", "--ansi", "--no-preview", "--prompt", "Select kubecontext> ")
 	c.Stdin = os.Stdin
 	c.Stderr = os.Stderr
 	c.Env = append(os.Environ(),
@@ -112,7 +112,7 @@ func GetNamespaceInteractive(context string, pattern string) (string, error) {
 		namespaceCmd = fmt.Sprintf("%s | grep %s", namespaceCmd, pattern)
 	}
 
-	c := exec.Command("fzf", "--ansi", "--no-preview")
+	c := exec.Command("fzf", "--ansi", "--no-preview", "--prompt", "Select namespace> ")
 	c.Stdin = os.Stdin
 	c.Stderr = os.Stderr
 	c.Env = append(os.Environ(),
