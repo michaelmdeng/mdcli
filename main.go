@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os" // Keep os for os.Args
+	"os"
 
 	"github.com/fatih/color"
 	"github.com/michaelmdeng/mdcli/internal/config"
@@ -23,9 +23,9 @@ func main() {
 
 	cfg := config.LoadConfig()
 	app := &cli.App{
-		// Store config in Metadata for subcommands to access
 		Metadata: map[string]interface{}{
 			"config": cfg,
+
 		},
 		EnableBashCompletion: true,
 		Name:                 "mdcli",
@@ -43,7 +43,7 @@ func main() {
 			wiki.BaseCommand(),
 			tidb.BaseCommand(),
 			tmux.BaseCommand(),
-			scratch.BaseCommand(), // Add this line
+			scratch.BaseCommand(),
 		},
 	}
 
