@@ -37,10 +37,9 @@ func generateTmuxinatorConfig(templatePath, projectName, projectRoot string) (st
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary tmuxinator config file: %w", err)
 	}
-	defer tmpFile.Close() // Close the file handle
+	defer tmpFile.Close()
 
 	if _, err := tmpFile.WriteString(content); err != nil {
-		// Attempt to remove the partially written file on error
 		os.Remove(tmpFile.Name())
 		return "", fmt.Errorf("failed to write to temporary tmuxinator config file: %w", err)
 	}
@@ -65,7 +64,6 @@ func tmuxAction(cCtx *cli.Context) error {
 	}
 	name := cCtx.Args().Get(0)
 
-	// --- Determine Scratch Path ---
 	var scratchPath string
 	if cCtx.IsSet("scratch-path") {
 		scratchPath = cCtx.String("scratch-path")
@@ -83,9 +81,8 @@ func tmuxAction(cCtx *cli.Context) error {
 	if scratchPath == "" {
 		return cli.Exit("scratch path not configured", 1)
 	}
-	absScratchPath, err := expandPath(scratchPath) // Use the new helper
+	absScratchPath, err := expandPath(scratchPath)
 	if err != nil {
-		// expandPath provides a formatted error
 		return cli.Exit(err.Error(), 1)
 	}
 	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
@@ -94,27 +91,25 @@ func tmuxAction(cCtx *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("failed to check scratch directory '%s': %v", absScratchPath, err), 1)
 	}
 
-	// --- Determine Tmuxinator Template Path ---
 	var tmuxinatorTemplate string
 	if cCtx.IsSet("tmuxinator-template") {
 		tmuxinatorTemplate = cCtx.String("tmuxinator-template")
 	} else {
 		cfgInterface, ok := cCtx.App.Metadata["config"]
 		if !ok {
-			return cli.Exit("configuration not found in application metadata", 1) // Should not happen if scratch path worked
+			return cli.Exit("configuration not found in application metadata", 1)
 		}
 		cfg, ok := cfgInterface.(config.Config)
 		if !ok {
-			return cli.Exit("invalid configuration type in application metadata", 1) // Should not happen
+			return cli.Exit("invalid configuration type in application metadata", 1)
 		}
 		tmuxinatorTemplate = cfg.Scratch.TmuxinatorTemplate
 	}
-	// Ensure template path is absolute if provided
+
 	if tmuxinatorTemplate != "" && !filepath.IsAbs(tmuxinatorTemplate) {
 		absTemplatePath, err := filepath.Abs(tmuxinatorTemplate)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: could not make tmuxinator template path absolute: %v\n", err)
-			// Proceed with the potentially relative path, hoping tmuxinator can find it or it fails later
 		} else {
 			tmuxinatorTemplate = absTemplatePath
 		}
@@ -123,40 +118,31 @@ func tmuxAction(cCtx *cli.Context) error {
 		return cli.Exit("tmuxinator template path not configured", 1)
 	}
 
-	// --- Find or Create Directory ---
 	targetDir, err := findScratchDirectory(absScratchPath, name)
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("error finding scratch directory: %v", err), 1)
 	}
 
 	if targetDir == "" {
-		// Not found, create it using the utility function
 		createReadme := cCtx.Bool("create-readme")
 		newDirPath, err := createScratchDirectory(absScratchPath, name, createReadme)
 		if err != nil {
-			// createScratchDirectory already provides a descriptive error
 			return cli.Exit(err.Error(), 1)
 		}
 		fmt.Printf("Created scratch directory: %s\n", newDirPath)
 		targetDir = newDirPath
-		// No need to check for existing again, createScratchDirectory handles it
 	}
 
-	// Determine the project name from the final target directory path
 	projectName := filepath.Base(targetDir)
 
-	// --- Generate Tmuxinator Config ---
 	tmpConfigPath, err := generateTmuxinatorConfig(tmuxinatorTemplate, projectName, targetDir)
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("failed to generate tmuxinator config: %v", err), 1)
 	}
-	// Ensure temporary file is removed even if tmuxinator fails
 	defer os.Remove(tmpConfigPath)
 
-	// --- Run Tmuxinator ---
 	fmt.Printf("Starting tmuxinator session '%s' for project '%s'...\n", projectName, targetDir)
 	if err := runTmuxinator(tmpConfigPath); err != nil {
-		// runTmuxinator already formats the error
 		return cli.Exit(err.Error(), 1)
 	}
 

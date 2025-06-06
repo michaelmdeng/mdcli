@@ -16,11 +16,9 @@ func newAction(cCtx *cli.Context) error {
 	name := cCtx.Args().Get(0)
 
 	var scratchPath string
-	// Check if the flag is set
 	if cCtx.IsSet("scratch-path") {
 		scratchPath = cCtx.String("scratch-path")
 	} else {
-		// Retrieve config from App Metadata if flag is not set
 		cfgInterface, ok := cCtx.App.Metadata["config"]
 		if !ok {
 			return cli.Exit("configuration not found in application metadata", 1)
@@ -32,46 +30,35 @@ func newAction(cCtx *cli.Context) error {
 		scratchPath = cfg.Scratch.ScratchPath
 	}
 
-	// Check if scratch path is determined
 	if scratchPath == "" {
 		return cli.Exit("scratch path not configured. Please set 'scratch_path' in your config file or use the --scratch-path flag", 1)
 	}
 
-	// Ensure scratchPath is absolute and expand ~
-	absScratchPath, err := expandPath(scratchPath) // Use the new helper
+	absScratchPath, err := expandPath(scratchPath)
 	if err != nil {
-		// expandPath provides a formatted error
 		return cli.Exit(err.Error(), 1)
 	}
 
-	// Check if the base scratch directory exists
 	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
 		return cli.Exit(fmt.Sprintf("scratch directory '%s' does not exist", absScratchPath), 1)
 	} else if err != nil {
-		// Handle other potential stat errors
 		return cli.Exit(fmt.Sprintf("failed to check scratch directory '%s': %v", absScratchPath, err), 1)
 	}
 
-	// Check for existing directory matching the name (exact or suffix)
 	existingPath, err := findScratchDirectory(absScratchPath, name)
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("error checking for existing directory '%s': %v", name, err), 1)
 	}
 	if existingPath != "" {
-		// A directory matching the name (exact or suffix) already exists.
-		// findScratchDirectory returns the full path.
 		return cli.Exit(fmt.Sprintf("directory matching name '%s' already exists: %s", name, existingPath), 1)
 	}
 
-	// Create the new directory using the utility function
 	createReadme := cCtx.Bool("create-readme")
 	newDirPath, err := createScratchDirectory(absScratchPath, name, createReadme)
 	if err != nil {
-		// createScratchDirectory already provides a descriptive error
 		return cli.Exit(err.Error(), 1)
 	}
 
-	// Print the full path of the created directory
 	fmt.Println(newDirPath)
 
 	return nil

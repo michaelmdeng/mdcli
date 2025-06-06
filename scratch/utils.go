@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp" // Add this import
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -33,7 +33,6 @@ func expandPath(path string) (string, error) {
 		}
 	}
 
-	// Make the path absolute if it's not already
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to get absolute path for '%s': %w", path, err)
@@ -49,14 +48,11 @@ func expandPath(path string) (string, error) {
 func findScratchDirectory(scratchPath, name string) (string, error) {
 	absScratchPath, err := filepath.Abs(scratchPath)
 	if err != nil {
-		// Although listScratchDirectories also does this, checking early avoids unnecessary work
 		return "", fmt.Errorf("failed to get absolute path for scratch directory '%s': %w", scratchPath, err)
 	}
 
-	// Use listScratchDirectories to get only valid, full paths
 	directories, err := listScratchDirectories(absScratchPath)
 	if err != nil {
-		// Propagate error from listing/checking the directory
 		return "", err
 	}
 
@@ -66,17 +62,14 @@ func findScratchDirectory(scratchPath, name string) (string, error) {
 	datePrefix := time.Now().Format("2006-01-02")
 	exactName := fmt.Sprintf("%s-%s", datePrefix, name)
 
-	// Iterate through the full paths returned by listScratchDirectories
 	for _, fullPath := range directories {
-		entryName := filepath.Base(fullPath) // Get the directory name from the full path
+		entryName := filepath.Base(fullPath)
 
-		// Check for exact match (including today's date)
 		if entryName == exactName {
 			exactMatch = fullPath
-			break // Exact match found, no need to check further
+			break
 		}
 
-		// Check for suffix match
 		if strings.HasSuffix(entryName, suffixToCheck) {
 			suffixMatches = append(suffixMatches, fullPath)
 		}
@@ -91,15 +84,12 @@ func findScratchDirectory(scratchPath, name string) (string, error) {
 	}
 
 	if len(suffixMatches) > 1 {
-		// Sort by full path name to get the most recent if dates are prefixes
 		sort.Strings(suffixMatches)
 		// Return the last one (most recent date assuming YYYY-MM-DD prefix)
 		return suffixMatches[len(suffixMatches)-1], nil
-		// Alternatively, error out:
-		// return "", fmt.Errorf("multiple directories found matching suffix '%s': %v", suffixToCheck, suffixMatches)
 	}
 
-	return "", nil // No match found
+	return "", nil
 }
 
 // createScratchDirectory creates a new dated directory within the scratch path.
@@ -107,37 +97,28 @@ func findScratchDirectory(scratchPath, name string) (string, error) {
 // If createReadme is true, it also creates an empty README.md file inside.
 // Returns the full path of the created directory or an error.
 func createScratchDirectory(scratchPath, name string, createReadme bool) (string, error) {
-	// Format the new directory name
 	today := time.Now().Format("2006-01-02")
 	newDirName := fmt.Sprintf("%s-%s", today, name)
-	// Note: scratchPath is expected to be absolute already by the callers
 	newDirPath := filepath.Join(scratchPath, newDirName)
 
-	// Double-check if it already exists (mitigate race conditions)
-	// Although findScratchDirectory in the callers should prevent this call if it exists.
 	if _, err := os.Stat(newDirPath); !os.IsNotExist(err) {
 		if err == nil {
-			// Directory surprisingly exists
 			return "", fmt.Errorf("directory '%s' already exists unexpectedly", newDirPath)
 		}
-		// Other stat error
 		return "", fmt.Errorf("failed to check directory status '%s': %w", newDirPath, err)
 	}
 
-	// Create the new directory
 	if err := os.Mkdir(newDirPath, 0755); err != nil {
 		return "", fmt.Errorf("failed to create directory '%s': %w", newDirPath, err)
 	}
 
-	// Create README.md if requested
 	if createReadme {
 		readmePath := filepath.Join(newDirPath, "README.md")
 		file, err := os.Create(readmePath)
 		if err != nil {
-			// Return error, but the directory was already created. Maybe log this?
 			return newDirPath, fmt.Errorf("directory created, but failed to create README.md: %w", err)
 		}
-		file.Close() // Close the empty file
+		file.Close()
 	}
 
 	return newDirPath, nil
@@ -152,7 +133,6 @@ func listScratchDirectories(scratchPath string) ([]string, error) {
 		return nil, fmt.Errorf("failed to get absolute path for scratch directory '%s': %w", scratchPath, err)
 	}
 
-	// Check if the directory exists first
 	if _, err := os.Stat(absScratchPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("scratch directory '%s' does not exist", absScratchPath)
 	} else if err != nil {
@@ -178,14 +158,12 @@ func listScratchDirectories(scratchPath string) ([]string, error) {
 
 	var directories []string
 	for _, entry := range entries {
-		// Check if it's a directory AND matches the pattern
 		if entry.IsDir() && scratchDirPattern.MatchString(entry.Name()) {
 			fullPath := filepath.Join(absScratchPath, entry.Name())
 			directories = append(directories, fullPath)
 		}
 	}
 
-	// Optionally sort the directories by name for consistent order
 	sort.Strings(directories)
 
 	return directories, nil
