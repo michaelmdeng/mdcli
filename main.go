@@ -18,11 +18,8 @@ const (
 	Version = "0.0.1"
 )
 
-func main() {
-	color.NoColor = false
-
-	cfg := config.LoadConfig()
-	app := &cli.App{
+func CreateApp(cfg config.Config) cli.App {
+	return cli.App{
 		Metadata: map[string]interface{}{
 			"config": cfg,
 
@@ -46,6 +43,12 @@ func main() {
 			scratch.BaseCommand(),
 		},
 	}
+}
 
+func main() {
+	color.NoColor = false
+
+	cfg := config.LoadConfig()
+	app := CreateApp(cfg)
 	app.Run(os.Args)
 }
