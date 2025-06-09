@@ -1,7 +1,6 @@
 package tidb
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -26,7 +25,7 @@ func pdTsoCommand() *cli.Command {
 		ArgsUsage: "<tso_or_timestamp>",
 		Action: func(cCtx *cli.Context) error {
 			if cCtx.NArg() != 1 {
-				return errors.New("exactly one argument (tso or timestamp) must be provided")
+				return cli.Exit("exactly one argument (tso or timestamp) must be provided", 1)
 			}
 			input := cCtx.Args().Get(0)
 
