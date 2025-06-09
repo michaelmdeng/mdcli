@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/michaelmdeng/mdcli/completion"
 	"github.com/michaelmdeng/mdcli/internal/config"
 	"github.com/michaelmdeng/mdcli/k8s"
 	"github.com/michaelmdeng/mdcli/rm"
@@ -41,6 +42,7 @@ func CreateApp(cfg config.Config) cli.App {
 			tidb.BaseCommand(),
 			tmux.BaseCommand(),
 			scratch.BaseCommand(),
+			completion.BaseCommand(),
 		},
 	}
 }

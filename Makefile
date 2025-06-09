@@ -2,6 +2,10 @@
 build:
 	go build -o bin ./...
 
+.PHONY: test-build
+test-build:
+	go test -c ./...
+
 .PHONY: tidy
 tidy:
 	go mod tidy
