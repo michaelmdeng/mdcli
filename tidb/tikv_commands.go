@@ -51,12 +51,12 @@ func tikvGetCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			tikvName := cCtx.Args().Get(0)
@@ -81,14 +81,14 @@ func tikvGetCommand() *cli.Command {
 
 			output, err := mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			output = output[1 : len(output)-1]
 
 			var tikvStores map[string]any
 			err = json.Unmarshal([]byte(output), &tikvStores)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			var storeId int
@@ -97,7 +97,7 @@ func tikvGetCommand() *cli.Command {
 				if strings.HasPrefix(store["ip"].(string), tikvName) {
 					storeId, err = strconv.Atoi(store["id"].(string))
 					if err != nil {
-						return err
+						return cli.Exit(err.Error(), 1)
 					}
 				}
 			}
@@ -115,7 +115,7 @@ func tikvGetCommand() *cli.Command {
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			pvs := strings.Split(output[1:len(output)-1], " ")
 			dataPv := pvs[0]
@@ -129,7 +129,7 @@ func tikvGetCommand() *cli.Command {
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			// Trim enclosing quotes and whitespace
 			output = strings.TrimSpace(output[1 : len(output)-1])
@@ -158,7 +158,7 @@ func tikvGetCommand() *cli.Command {
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			nodeName := output[1 : len(output)-1]
 
@@ -170,14 +170,14 @@ func tikvGetCommand() *cli.Command {
 
 			output, err = mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			instanceId := output[1 : len(output)-1]
 			tikvOutput["instanceId"] = instanceId
 
 			out, err := json.Marshal(tikvOutput)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			fmt.Println(string(out))
 
@@ -204,12 +204,12 @@ func tikvStoreCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			tikvName := cCtx.Args().Get(0)
@@ -227,14 +227,14 @@ func tikvStoreCommand() *cli.Command {
 
 			output, err := mdexec.CaptureCommand(mdk8s.Kubectl, args...)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 			output = output[1 : len(output)-1]
 
 			var tikvStores map[string]any
 			err = json.Unmarshal([]byte(output), &tikvStores)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			var storeId int
@@ -243,7 +243,7 @@ func tikvStoreCommand() *cli.Command {
 				if strings.HasPrefix(store["ip"].(string), tikvName) {
 					storeId, err = strconv.Atoi(store["id"].(string))
 					if err != nil {
-						return err
+						return cli.Exit(err.Error(), 1)
 					}
 
 					fmt.Println(storeId)
@@ -271,12 +271,12 @@ func tikvDeleteCommand() *cli.Command {
 			var err error
 			context, err = ParseContext(context, interactive, "^m-tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
-				return err
+				return cli.Exit(err.Error(), 1)
 			}
 
 			tikvName := cCtx.Args().Get(0)
@@ -292,7 +292,11 @@ func tikvDeleteCommand() *cli.Command {
 				colorDebugPrintfln(context, "%s %s", mdk8s.Kubectl, strings.Join(args, " "))
 			}
 
-			return mdexec.RunCommand(mdk8s.Kubectl, args...)
+			err = mdexec.RunCommand(mdk8s.Kubectl, args...)
+			if err != nil {
+				return cli.Exit(err.Error(), 1)
+			}
+			return nil
 		},
 	}
 }
