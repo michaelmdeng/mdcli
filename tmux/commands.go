@@ -15,6 +15,7 @@ func BaseCommand() *cli.Command {
 		Usage:   tmuxUsage,
 		Subcommands: []*cli.Command{
 			layoutCommand(),
+			shellCommand(),
 			switchCommand(),
 			panesCommand(),
 			windowsCommand(),
@@ -112,7 +113,7 @@ const switchUsage = `Switch to the corresponding pane in a "window-based" layout
 func switchCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "switch",
-		Aliases: []string{"s"},
+		Aliases: []string{"sw"},
 		Usage:   switchUsage,
 		Action: func(cCtx *cli.Context) error {
 			return switchExtraPane()
@@ -208,6 +209,25 @@ func windowsCommand() *cli.Command {
 		},
 		Action: func(cCtx *cli.Context) error {
 			return setWindowWindowLayout(cCtx.String("session"), cCtx.String("window"))
+		},
+	}
+}
+
+const shellUsage = `Get the fully-qualified target for the current window's shell pane`
+
+func shellCommand() *cli.Command {
+	return &cli.Command{
+		Name:    "shell",
+		Aliases: []string{"sh"},
+		Usage:   shellUsage,
+		Action: func(cCtx *cli.Context) error {
+			session, window, err := currentWindow()
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%s:%s.1", session, window)
+			return nil
 		},
 	}
 }
