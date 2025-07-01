@@ -9,8 +9,8 @@ import (
 	"github.com/michaelmdeng/mdcli/k8s"
 	"github.com/michaelmdeng/mdcli/rm"
 	"github.com/michaelmdeng/mdcli/scratch"
-	"github.com/michaelmdeng/mdcli/tidb"
 	"github.com/michaelmdeng/mdcli/split"
+	"github.com/michaelmdeng/mdcli/tidb"
 	"github.com/michaelmdeng/mdcli/tmux"
 	"github.com/michaelmdeng/mdcli/wiki"
 	"github.com/urfave/cli/v2"
@@ -24,7 +24,6 @@ func CreateApp(cfg config.Config) cli.App {
 	return cli.App{
 		Metadata: map[string]interface{}{
 			"config": cfg,
-
 		},
 		EnableBashCompletion: true,
 		Name:                 "mdcli",

@@ -56,7 +56,7 @@ func splitByLines(inputPath, outputPrefix string, numLines int) error {
 			outFile.Close()
 		}
 	}
-	
+
 	if outFile != nil && linesWritten > 0 {
 		outFile.Close()
 	}
