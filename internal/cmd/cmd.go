@@ -69,7 +69,7 @@ func GetConfirmation(s string) bool {
 	reader := bufio.NewReader(os.Stdin)
 
 	numAttempts := 3
-	for i := 0; i < numAttempts; i++ {
+	for range numAttempts {
 		fmt.Fprintf(os.Stderr, "%s [y/n]: ", s)
 
 		response, err := reader.ReadString('\n')
@@ -79,9 +79,10 @@ func GetConfirmation(s string) bool {
 
 		response = strings.ToLower(strings.TrimSpace(response))
 
-		if response == "y" || response == "yes" {
+		switch response {
+		case "y", "yes":
 			return true
-		} else if response == "n" || response == "no" {
+		case "n", "no":
 			return false
 		}
 	}

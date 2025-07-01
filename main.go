@@ -22,7 +22,7 @@ const (
 
 func CreateApp(cfg config.Config) cli.App {
 	return cli.App{
-		Metadata: map[string]interface{}{
+		Metadata: map[string]any{
 			"config": cfg,
 		},
 		EnableBashCompletion: true,

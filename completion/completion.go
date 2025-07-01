@@ -39,7 +39,6 @@ func BaseCommand() *cli.Command {
 		},
 		Action: func(c *cli.Context) error {
 			if c.Bool("zsh") {
-				// Print the embedded script directly
 				fmt.Print(zshAutocompleteScript)
 				return nil
 			}

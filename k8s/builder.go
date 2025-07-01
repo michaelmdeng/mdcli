@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -166,7 +165,7 @@ func (b *KubeBuilder) BuildK9sArgs(context string, namespace string, allNamespac
 		// set default resource
 		output = append(output, "-c", "pods")
 	} else {
-		return nil, errors.New(fmt.Sprintf("too many arguments provided to k9s: %s", strings.Join(args, " ")))
+		return nil, fmt.Errorf("too many arguments provided to k9s: %s", strings.Join(args, " "))
 	}
 
 	if allNamespaces {

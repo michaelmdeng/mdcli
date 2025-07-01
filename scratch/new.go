@@ -8,7 +8,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// newAction implements the logic for the 'scratch new' command.
 func newAction(cCtx *cli.Context) error {
 	if cCtx.NArg() != 1 {
 		return cli.Exit("exactly one argument <name> must be provided", 2)
@@ -64,7 +63,6 @@ func newAction(cCtx *cli.Context) error {
 	return nil
 }
 
-// newCommand defines the 'new' subcommand for scratch.
 var newCommand = &cli.Command{
 	Name:      "new",
 	Usage:     "Create a new dated directory in the scratch path",
