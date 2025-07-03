@@ -142,7 +142,7 @@ func init() {
 		}
 	}
 
-	for prodNamespace, _ := range prodNamespaceAliases {
+	for prodNamespace := range prodNamespaceAliases {
 		if _, ok := stgNamespaceAliases[prodNamespace]; !ok {
 			if _, ok := testNamespaceAliases[prodNamespace]; !ok {
 				EnvsByNamespace[prodNamespace] = ProdEnv
@@ -160,7 +160,7 @@ func init() {
 		}
 	}
 
-	for stgNamespace, _ := range stgNamespaceAliases {
+	for stgNamespace := range stgNamespaceAliases {
 		if _, ok := prodNamespaceAliases[stgNamespace]; !ok {
 			if _, ok := testNamespaceAliases[stgNamespace]; !ok {
 				EnvsByNamespace[stgNamespace] = StgEnv
@@ -178,7 +178,7 @@ func init() {
 		}
 	}
 
-	for testNamespace, _ := range testNamespaceAliases {
+	for testNamespace := range testNamespaceAliases {
 		if _, ok := prodNamespaceAliases[testNamespace]; !ok {
 			if _, ok := stgNamespaceAliases[testNamespace]; !ok {
 				EnvsByNamespace[testNamespace] = TestEnv
@@ -519,15 +519,16 @@ func inferNamespace(context string, namespace string) (string, bool) {
 		return namespace, false
 	}
 
-	if env == "prod" {
+	switch env {
+	case "prod":
 		if namespace, ok := ProdNamespacesByAlias[namespaceAlias]; ok {
 			return namespace, true
 		}
-	} else if env == "stg" {
+	case "stg":
 		if namespace, ok := StgNamespacesByAlias[namespaceAlias]; ok {
 			return namespace, true
 		}
-	} else if env == "test" {
+	case "test":
 		if namespace, ok := TestNamespacesByAlias[namespaceAlias]; ok {
 			return namespace, true
 		}
@@ -614,7 +615,7 @@ var (
 				}
 				return fmt.Sprintf("us-east-1%s", zone), nil
 			} else {
-				return "", errors.New("Could not generate AZ alias")
+				return "", errors.New("could not generate AZ alias")
 			}
 		},
 	}

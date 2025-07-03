@@ -24,20 +24,11 @@ func BaseTikvCommand() *cli.Command {
 	}
 }
 
-type getTikvOutput struct {
-	name       string
-	storeId    int
-	instanceId string
-	dataVol    string
-	walVol     string
-	raftVol    string
-}
-
 func tikvGetCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "get",
 		Usage: "Fetch tikv info",
-		Flags: append(mdk8s.BaseK8sFlags),
+		Flags: mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -140,11 +131,12 @@ func tikvGetCommand() *cli.Command {
 					return cli.Exit(err.Error(), 1)
 				}
 				for pv, handle := range pvHandle {
-					if pv == dataPv {
+					switch pv {
+					case dataPv:
 						tikvOutput["dataVol"] = handle
-					} else if pv == walPv {
+					case walPv:
 						tikvOutput["walVol"] = handle
-					} else if pv == raftPv {
+					case raftPv:
 						tikvOutput["raftVol"] = handle
 					}
 				}
@@ -190,7 +182,7 @@ func tikvStoreCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "store",
 		Usage: "Fetch tikv store info",
-		Flags: append(mdk8s.BaseK8sFlags),
+		Flags: mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -259,7 +251,7 @@ func tikvDeleteCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "delete",
 		Usage: "Delete tikv store pod safely",
-		Flags: append(mdk8s.BaseK8sFlags),
+		Flags: mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")

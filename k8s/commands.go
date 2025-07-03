@@ -112,14 +112,14 @@ func kubectlCommand() *cli.Command {
 			builder := NewKubeBuilder()
 			args, confirm := builder.BuildKubectlArgs(context, namespace, allNamespaces, assumeClusterAdmin, cCtx.Args().Slice())
 			if dryRun {
-				fmt.Println(fmt.Sprintf("%s %s", Kubectl, strings.Join(args, " ")))
+				fmt.Printf("%s %s\n", Kubectl, strings.Join(args, " "))
 				return nil
 			} else if confirm {
-				fmt.Println(fmt.Sprintf("%s %s", Kubectl, strings.Join(args, " ")))
+				fmt.Printf("%s %s\n", Kubectl, strings.Join(args, " "))
 				res := mdexec.GetConfirmation("Do you want to execute the above command?")
 				if !res {
 					fmt.Println("Command canceled")
-					return errors.New("Command canceled")
+					return errors.New("command canceled")
 				}
 			}
 
@@ -159,7 +159,7 @@ func k9sCommand() *cli.Command {
 			}
 
 			if dryRun {
-				fmt.Println(fmt.Sprintf("%s %s", K9s, strings.Join(args, " ")))
+				fmt.Printf("%s %s\n", K9s, strings.Join(args, " "))
 				return nil
 			}
 

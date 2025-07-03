@@ -100,7 +100,7 @@ func layoutCommand() *cli.Command {
 			}
 
 			if aggregateErrors && len(aggregatedErrors) > 0 {
-				return fmt.Errorf("Encountered errors in setting layout: %v", aggregatedErrors)
+				return fmt.Errorf("encountered errors in setting layout: %v", aggregatedErrors)
 			}
 
 			return nil

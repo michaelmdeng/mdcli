@@ -19,8 +19,15 @@ test-build: ## Build test code
 tidy: ## Tidy go modules
 	go mod tidy
 
-.PHONY: fmt
+.PHONY: fmt lint
 fmt: ## Format go code
+	golangci-lint run
+	go vet ./...
+	go fmt ./...
+
+lint: ## Alias for fmt
+	golangci-lint run
+	go vet ./...
 	go fmt ./...
 
 .PHONY: test

@@ -12,20 +12,13 @@ import (
 )
 
 var (
-	checksumPatternString = `[a-f0-9]{4}`
-	checksumPattern       = regexp.MustCompile(checksumPatternString)
-
-	dimensionPatternString = `(?P<width>\d+)x(?P<height>\d+),\d+,\d+`
-	dimensionPattern       = regexp.MustCompile(dimensionPatternString)
-
+	checksumPatternString        = `[a-f0-9]{4}`
+	dimensionPatternString       = `(?P<width>\d+)x(?P<height>\d+),\d+,\d+`
 	ignoreDimensionPatternString = `\d+x\d+,\d+,\d+`
-	ignoreDimensionPattern       = regexp.MustCompile(ignoreDimensionPatternString)
 
 	sidePanesPatternString = `\[(?P<sidePanes>.*)\]`
-	sidePanesPattern       = regexp.MustCompile(sidePanesPatternString)
-
-	sidePanePatternString = `\d+x\d+,\d+,\d+,(?P<sidePaneId>\d+)`
-	sidePanePattern       = regexp.MustCompile(sidePanePatternString)
+	sidePanePatternString  = `\d+x\d+,\d+,\d+,(?P<sidePaneId>\d+)`
+	sidePanePattern        = regexp.MustCompile(sidePanePatternString)
 
 	singlePanePattern = regexp.MustCompile(fmt.Sprintf("^%v,%v,%v", checksumPatternString, dimensionPatternString, `(?P<mainPaneId>\d+)`))
 	twoPanePattern    = regexp.MustCompile(fmt.Sprintf("^%v,%v{%v,%v,%v,%v}", checksumPatternString, dimensionPatternString, ignoreDimensionPatternString, `(?P<mainPaneId>\d+)`, ignoreDimensionPatternString, `(?P<sidePaneId>\d+)`))
@@ -141,7 +134,7 @@ func parseLayout(layout *tmuxLayout) (*baseLayout, error) {
 		}, nil
 	}
 
-	return &baseLayout{}, errors.New("Could not parse layout")
+	return &baseLayout{}, errors.New("could not parse layout")
 }
 
 func defaultLayout(layout *baseLayout) (*tmuxLayout, error) {

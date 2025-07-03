@@ -101,22 +101,6 @@ func killPane(session string, window string, pane string) error {
 	)
 }
 
-func isPaneBased(session string) (bool, error) {
-	windows, err := listWindows(session)
-	if err != nil {
-		return false, err
-	}
-
-	for _, window := range windows {
-		if strings.Contains(window, "-extra") {
-			return false, nil
-		}
-	}
-
-	return true, nil
-
-}
-
 func isWindowBased(session string) (bool, error) {
 	windows, err := listWindows(session)
 	if err != nil {
@@ -142,7 +126,7 @@ func extraWindowName(window string) string {
 }
 
 func mainWindowName(window string) string {
-	return strings.Replace(window, "-extra", "", -1)
+	return strings.ReplaceAll(window, "-extra", "")
 }
 
 func setWindowWindowLayout(session string, window string) error {
@@ -161,7 +145,7 @@ func setWindowWindowLayout(session string, window string) error {
 		}
 	}
 
-	for mainWindow, _ := range mainWindows {
+	for mainWindow := range mainWindows {
 		if window != "" && mainWindow != window {
 			continue
 		}
@@ -242,7 +226,7 @@ func setPaneWindowLayout(session string, window string) error {
 		}
 	}
 
-	for extraWindow, _ := range extraWindows {
+	for extraWindow := range extraWindows {
 		mainWindow := mainWindowName(extraWindow)
 
 		for {
@@ -271,7 +255,7 @@ func setPaneWindowLayout(session string, window string) error {
 		}
 	}
 
-	for mainWindow, _ := range mainWindows {
+	for mainWindow := range mainWindows {
 		if window != "" && mainWindow != window {
 			continue
 		}

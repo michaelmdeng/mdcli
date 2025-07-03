@@ -48,7 +48,7 @@ func tidbSecretCommand() *cli.Command {
 		Name:    "secret",
 		Aliases: []string{"pass", "password"},
 		Usage:   "Fetch tidb root user password",
-		Flags:   append(mdk8s.BaseK8sFlags),
+		Flags:   mdk8s.BaseK8sFlags,
 		Action: func(cCtx *cli.Context) error {
 			strict := cCtx.Bool("strict")
 			context := cCtx.String("context")
@@ -64,7 +64,7 @@ func tidbSecretCommand() *cli.Command {
 				return cli.Exit(err.Error(), 1)
 			}
 
-			namespace, allNamespaces, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
+			namespace, _, err = ParseNamespace(namespace, allNamespaces, interactive, context, "^tidb-", strict)
 			if err != nil {
 				return cli.Exit(err.Error(), 1)
 			}
