@@ -28,7 +28,9 @@ func splitByLines(inputPath, outputPrefix string, numLines int) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	scanner := bufio.NewScanner(file)
 	partNum := 0
@@ -42,7 +44,9 @@ func splitByLines(inputPath, outputPrefix string, numLines int) error {
 			if err != nil {
 				return err
 			}
-			defer outFile.Close()
+			defer func() {
+				_ = outFile.Close()
+			}()
 		}
 
 		if _, err := outFile.WriteString(scanner.Text() + "\n"); err != nil {
@@ -53,13 +57,9 @@ func splitByLines(inputPath, outputPrefix string, numLines int) error {
 		if linesWritten >= numLines {
 			linesWritten = 0
 			partNum++
-			outFile.Close()
 		}
 	}
 
-	if outFile != nil && linesWritten > 0 {
-		outFile.Close()
-	}
 	return scanner.Err()
 }
 
@@ -112,7 +112,9 @@ func splitByBytes(inputPath, outputPrefix string, byteSize int) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	partNum := 0
 	buf := make([]byte, byteSize)
@@ -126,10 +128,10 @@ func splitByBytes(inputPath, outputPrefix string, byteSize int) error {
 				return err
 			}
 			if _, werr := outFile.Write(buf[:n]); werr != nil {
-				outFile.Close()
+				_ = outFile.Close()
 				return werr
 			}
-			outFile.Close()
+			_ = outFile.Close()
 			partNum++
 		}
 		if err != nil {
@@ -147,7 +149,9 @@ func splitByChunks(inputPath, outputPrefix string, numChunks int) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	stat, err := file.Stat()
 	if err != nil {
@@ -163,19 +167,28 @@ func splitByChunks(inputPath, outputPrefix string, numChunks int) error {
 			return err
 		}
 
-		start := int64(i) * chunkSize
-		end := start + chunkSize
-		if i == numChunks-1 {
-			end = fileSize
-		}
+		err = func() error {
+			defer func() {
+				_ = outFile.Close()
+			}()
 
-		if _, err := file.Seek(start, 0); err != nil {
-			outFile.Close()
-			return err
-		}
+			start := int64(i) * chunkSize
+			end := start + chunkSize
+			if i == numChunks-1 {
+				end = fileSize
+			}
 
-		_, err = io.CopyN(outFile, file, end-start)
-		outFile.Close()
+			if _, err := file.Seek(start, 0); err != nil {
+				return err
+			}
+
+			_, err = io.CopyN(outFile, file, end-start)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}()
 		if err != nil {
 			return err
 		}
@@ -197,7 +210,9 @@ func splitByBytesLineAware(inputPath, outputPrefix string, byteSize int) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	reader := bufio.NewReader(file)
 	partNum := 0
@@ -205,7 +220,7 @@ func splitByBytesLineAware(inputPath, outputPrefix string, byteSize int) error {
 	if currentFile == nil {
 		return fmt.Errorf("failed to create output file")
 	}
-	defer currentFile.Close()
+	defer currentFile.Close() //nolint:errcheck
 	currentSize := 0
 
 	for {
@@ -216,7 +231,7 @@ func splitByBytesLineAware(inputPath, outputPrefix string, byteSize int) error {
 
 		lineSize := len(line)
 		if currentSize > 0 && currentSize+lineSize > byteSize {
-			currentFile.Close()
+			_ = currentFile.Close()
 			partNum++
 			currentFile = createSplitFile(inputPath, outputPrefix, partNum)
 			if currentFile == nil {
@@ -242,25 +257,31 @@ func splitByChunksLineAware(inputPath, outputPrefix string, numChunks int) error
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	reader := bufio.NewReader(file)
 	partNum := 0
 	bytesPerChunk := 0
-	file.Seek(0, 0)
+	if _, err = file.Seek(0, 0); err != nil {
+		return err
+	}
 	size, err := file.Seek(0, 2)
 	if err != nil {
 		return err
 	}
 	bytesPerChunk = int(size) / numChunks
 
-	file.Seek(0, 0)
+	if _, err = file.Seek(0, 0); err != nil {
+		return err
+	}
 	currentSize := 0
 	currentFile := createSplitFile(inputPath, outputPrefix, partNum)
 	if currentFile == nil {
 		return fmt.Errorf("failed to create output file")
 	}
-	defer currentFile.Close()
+	defer currentFile.Close() //nolint:errcheck
 
 	for {
 		line, err := reader.ReadBytes('\n')
@@ -270,7 +291,7 @@ func splitByChunksLineAware(inputPath, outputPrefix string, numChunks int) error
 
 		lineSize := len(line)
 		if currentSize > 0 && currentSize+lineSize > bytesPerChunk && partNum < numChunks-1 {
-			currentFile.Close()
+			_ = currentFile.Close()
 			partNum++
 			currentFile = createSplitFile(inputPath, outputPrefix, partNum)
 			if currentFile == nil {

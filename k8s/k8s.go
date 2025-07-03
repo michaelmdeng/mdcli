@@ -11,11 +11,6 @@ import (
 )
 
 var (
-	inferableCmds = map[string]struct{}{
-		"exec":         {},
-		"logs":         {},
-		"port-forward": {},
-	}
 	confirmableCmds = map[string]struct{}{
 		"annotate": {},
 		"apply":    {},
@@ -51,11 +46,6 @@ var (
 		"job":         {},
 	}
 )
-
-func isInferableCmd(cmd string) bool {
-	_, ok := inferableCmds[cmd]
-	return ok
-}
 
 func isConfirmableCmd(cmd string) bool {
 	_, ok := confirmableCmds[cmd]

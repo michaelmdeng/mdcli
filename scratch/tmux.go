@@ -37,10 +37,12 @@ func generateTmuxinatorConfig(templatePath, projectName, projectRoot string) (st
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary tmuxinator config file: %w", err)
 	}
-	defer tmpFile.Close()
+	defer func() {
+		_ = tmpFile.Close()
+	}()
 
 	if _, err := tmpFile.WriteString(content); err != nil {
-		os.Remove(tmpFile.Name())
+		_ = os.Remove(tmpFile.Name())
 		return "", fmt.Errorf("failed to write to temporary tmuxinator config file: %w", err)
 	}
 
@@ -139,7 +141,9 @@ func tmuxAction(cCtx *cli.Context) error {
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("failed to generate tmuxinator config: %v", err), 1)
 	}
-	defer os.Remove(tmpConfigPath)
+	defer func() {
+		_ = os.Remove(tmpConfigPath)
+	}()
 
 	fmt.Printf("Starting tmuxinator session '%s' for project '%s'...\n", projectName, targetDir)
 	if err := runTmuxinator(tmpConfigPath); err != nil {

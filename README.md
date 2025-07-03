@@ -16,6 +16,8 @@ make test
 
 ## Lint/fmt
 
+Requires `golangci-lint` install
+
 ```bash
 make fmt
 ```

@@ -38,11 +38,13 @@ func getDocuments() ([]Document, error) {
 	}
 
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	var docs []RMDocument
@@ -91,11 +93,13 @@ func getDocumentIdByName(name string) (string, error) {
 	}
 
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	var docs []RMDocument
@@ -132,11 +136,13 @@ func downloadDocument(id string, outputFile string) error {
 	}
 
 	if resp.Body != nil {
-		defer resp.Body.Close()
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	if _, err := os.Stat(outputFile); err == nil {
@@ -147,7 +153,9 @@ func downloadDocument(id string, outputFile string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {

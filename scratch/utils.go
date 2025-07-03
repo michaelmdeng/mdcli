@@ -101,7 +101,9 @@ func createScratchDirectory(scratchPath, name string, createReadme bool) (string
 		if err != nil {
 			return newDirPath, fmt.Errorf("directory created, but failed to create README.md: %w", err)
 		}
-		file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 	}
 
 	return newDirPath, nil

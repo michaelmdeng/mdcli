@@ -10,11 +10,11 @@ import (
 func colorDebugPrintfln(context string, format string, args ...interface{}) {
 	format = fmt.Sprintf("%s\n", format)
 	if isProdTidbContext(context) {
-		color.New(color.FgRed).Fprintf(os.Stderr, format, args...)
+		_, _ = color.New(color.FgRed).Fprintf(os.Stderr, format, args...)
 	} else if isStgTidbContext(context) {
-		color.New(color.FgYellow).Fprintf(os.Stderr, format, args...)
+		_, _ = color.New(color.FgYellow).Fprintf(os.Stderr, format, args...)
 	} else if isTestTidbContext(context) {
-		color.New(color.FgMagenta).Fprintf(os.Stderr, format, args...)
+		_, _ = color.New(color.FgMagenta).Fprintf(os.Stderr, format, args...)
 	} else {
 		fmt.Fprintf(os.Stderr, format, args...)
 	}
