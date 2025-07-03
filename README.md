@@ -5,13 +5,19 @@ CLI for personal tools.
 ## Build
 
 ```bash
-go build -o bin/mdcli ./...
+make build
 ```
 
 ## Test
 
 ```bash
-go test ./...
+make test
+```
+
+## Lint/fmt
+
+```bash
+make fmt
 ```
 
 # Usage
