@@ -51,7 +51,7 @@ func NewKubeBuilderWithSubstitutions(substitutions []Substitution) KubeBuilder {
 	return KubeBuilder{Substitutions: substitutions}
 }
 
-func (b *KubeBuilder) substitute(args []string, context, namespace string) []string {
+func (b *KubeBuilder) Substitute(args []string, context, namespace string) []string {
 	for i, arg := range args {
 		for _, sub := range b.Substitutions {
 			for _, alias := range sub.Aliases {
@@ -70,7 +70,7 @@ func (b *KubeBuilder) substitute(args []string, context, namespace string) []str
 }
 
 func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allNamespaces bool, assumeClusterAdmin bool, args []string) ([]string, bool) {
-	parsedArgs := b.substitute(args, context, namespace)
+	parsedArgs := b.Substitute(args, context, namespace)
 
 	output := make([]string, 0)
 	if context != "" {
@@ -78,7 +78,7 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 	}
 
 	if namespace != "" {
-		output = append(output, "-n", namespace)
+		output = append(output, "--namespace", namespace)
 	}
 
 	if len(args) == 0 {
@@ -131,8 +131,11 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 		output = append(output, "--as=compute:cluster-admin")
 	}
 
-	if kubectlCmd == "exec" && len(parsedArgs) == 2 {
-		output = append(output, "-it", "--", "bash")
+	if kubectlCmd == "exec" {
+		// if no args passed to exec, assume an interactive shell ie. ` -it -- bash`
+		if len(parsedArgs) == 2 || (resourceModified && len(parsedArgs) == 3) {
+			output = append(output, "-it", "--", "bash")
+		}
 	}
 
 	for idx := last; idx < len(parsedArgs); idx++ {
@@ -143,7 +146,7 @@ func (b *KubeBuilder) BuildKubectlArgs(context string, namespace string, allName
 }
 
 func (b *KubeBuilder) BuildK9sArgs(context string, namespace string, allNamespaces bool, args []string) ([]string, error) {
-	parsedArgs := b.substitute(args, context, namespace)
+	parsedArgs := b.Substitute(args, context, namespace)
 
 	output := make([]string, 0)
 	if context != "" {
