@@ -1,0 +1,13 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+bin/
+build/
+
+# CI/CD
+.github/
+
+# Env
+.env

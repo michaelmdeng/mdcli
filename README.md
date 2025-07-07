@@ -27,3 +27,7 @@ make fmt
 ```bash
 mdcli -h
 ```
+
+```dockerfile
+COPY --from ghcr.io/michaelmdeng/mdcli/mdcli:latest /bin/mdcli .
+```

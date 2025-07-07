@@ -33,3 +33,18 @@ lint: ## Alias for fmt
 .PHONY: test
 test: ## Run tests
 	go test ./...
+
+TAG ?= latest
+REGISTRY_TAG ?= ghcr.io/michaelmdeng/mdcli/mdcli:$(TAG)
+
+.PHONY: build-image
+build-image: ## Build the docker image, accepts optional tag. Usage: make build-image tag=v0.0.1
+	docker build -t $(REGISTRY_TAG) .
+
+.PHONY: run-image
+run-image: ## Run the docker image, accepts optional tag. Usage: make run-image tag=v0.0.1
+	docker run -it $(REGISTRY_TAG)
+
+.PHONY: publish-image
+publish-image: ## Publish the docker image to ghcr.io, requires tag. Usage: make publish-image tag=v0.0.1
+	docker push $(REGISTRY_TAG)
