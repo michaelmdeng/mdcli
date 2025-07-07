@@ -1,3 +1,5 @@
+* Use Makefile targets to lint, build, test, and run the software rather than using `go
+  {build,test,run} ...` directly
 * Properly handle errors and exceptions to ensure the software's robustness.
 * Keep the code as simple as possible. Avoid unnecessary complexity.
 * Use meaningful names for variables, functions, etc. Names should reveal intent. Function

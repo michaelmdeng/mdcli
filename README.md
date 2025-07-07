@@ -4,8 +4,16 @@ CLI for personal tools.
 
 ## Build
 
+Build binary at `./bin/mdcli`
+
 ```bash
 make build
+```
+
+Install/link binary to `~/.local/bin`
+
+```bash
+make install
 ```
 
 ## Test

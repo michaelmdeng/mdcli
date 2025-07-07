@@ -9,7 +9,12 @@ help: ## Print this help message
 
 .PHONY: build
 build: ## Build the project
-	go build -o bin ./...
+	go build -o bin/mdcli .
+
+.PHONY: install
+install: build ## Install the binary to ~/.local/bin
+	mkdir -p ~/.local/bin
+	ln -sf $(CURDIR)/bin/mdcli ~/.local/bin/mdcli
 
 .PHONY: test-build
 test-build: ## Build test code
