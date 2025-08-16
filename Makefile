@@ -7,9 +7,11 @@ help: ## Print this help message
 	@echo "Targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
+GOFLAGS := -buildvcs=false
+
 .PHONY: build
 build: ## Build the project
-	go build -o bin/mdcli .
+	go build $(GOFLAGS) -o bin/mdcli .
 
 .PHONY: install
 install: build ## Install the binary to ~/.local/bin
@@ -18,7 +20,7 @@ install: build ## Install the binary to ~/.local/bin
 
 .PHONY: test-build
 test-build: ## Build test code
-	go test -c ./...
+	go test $(GOFLAGS) -c ./...
 
 .PHONY: tidy
 tidy: ## Tidy go modules
@@ -26,14 +28,16 @@ tidy: ## Tidy go modules
 
 .PHONY: fmt lint
 fmt: ## Format go code
-	golangci-lint run
+	GOFLAGS="$(GOFLAGS)" golangci-lint run
+	@files="$$(gofmt -l -w .)"; \
+	if [ -n "$$files" ]; then \
+		echo "Reformatted these files:"; \
+		echo "$$files"; \
+		exit 1; \
+	fi
 	go vet ./...
-	go fmt ./...
 
-lint: ## Alias for fmt
-	golangci-lint run
-	go vet ./...
-	go fmt ./...
+lint: fmt # Alias for fmt
 
 .PHONY: test
 test: ## Run tests

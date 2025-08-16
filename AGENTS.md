@@ -1,0 +1,24 @@
+# Coding Guidelines
+* Properly handle errors and exceptions to ensure the software's robustness.
+* Keep the code as simple as possible. Avoid unnecessary complexity.
+* Use meaningful names for variables, functions, etc. Names should reveal intent. Function
+  names should describe the action being performed.
+* Only use comments when necessary, as they can become outdated. Instead, strive to make
+  the code self-explanatory.
+* When comments are used, they should add useful information that is not readily apparent
+  from the code itself.
+* Consider security implications of the code. Implement security best practices to protect
+  against vulnerabilities and attacks.
+
+# Project Guidelines
+* Use Makefile targets to lint, build, test, and run the software rather than using `go
+  {build,test,run} ...` directly
+* When creating feature branches, use the format `<author>/<feature-name>` for the branch
+  name
+* Use the Github MCP for creating/managing status checks, PRs, and issues. DO NOT use the
+  `gh` CLI when MCP supports the equivalent actions
+* When generating descriptions for commits and PRs, DO NOT mention that the changes are
+  generated with or by an agent. When attributing authorship, DO NOT attribute to the
+  agent, but rather attribute changes to the author/user that is prompting you. DO NOT
+  include the agent as a co-author to any git commits and only include the author/user as
+  the author of the commit.
