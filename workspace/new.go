@@ -18,11 +18,11 @@ func newAction(cCtx *cli.Context) error {
 	gitURL := cCtx.Args().Get(0)
 
 	var (
-		name                 = cCtx.String("name")
-		projectDir           = cCtx.String("workspace-dir")
-		gitBranch            = cCtx.String("git-branch")
-		initializeWorktree   = cCtx.Bool("initialize-worktree")
-		defaultWorktreeName  = cCtx.String("default-worktree-name")
+		name                = cCtx.String("name")
+		projectDir          = cCtx.String("workspace-dir")
+		gitBranch           = cCtx.String("git-branch")
+		initializeWorktree  = cCtx.Bool("initialize-worktree")
+		defaultWorktreeName = cCtx.String("default-worktree-name")
 	)
 
 	if name == "" {
@@ -56,13 +56,13 @@ func newAction(cCtx *cli.Context) error {
 	}
 
 	workspacePath := filepath.Join(projectDir, name)
-	
+
 	if _, err := os.Stat(workspacePath); err == nil {
 		return cli.Exit(fmt.Sprintf("workspace directory already exists: %s", workspacePath), 1)
 	} else if !os.IsNotExist(err) {
 		return cli.Exit(fmt.Sprintf("failed to check workspace directory: %v", err), 1)
 	}
-	
+
 	if err := os.MkdirAll(workspacePath, 0755); err != nil {
 		return cli.Exit(fmt.Sprintf("failed to create workspace directory: %v", err), 1)
 	}
@@ -80,7 +80,7 @@ func newAction(cCtx *cli.Context) error {
 		}
 
 		worktreePath := filepath.Join(worktreesDir, defaultWorktreeName)
-		
+
 		cmd := exec.Command("git", "worktree", "add", worktreePath, gitBranch)
 		cmd.Dir = workspacePath
 		if output, err := cmd.CombinedOutput(); err != nil {
@@ -96,27 +96,27 @@ func extractRepoName(gitURL string) string {
 	// Extract repo name from URL
 	// Handle both SSH and HTTPS formats
 	name := gitURL
-	
+
 	// Remove trailing slash if present
 	if len(name) > 0 && name[len(name)-1] == '/' {
 		name = name[:len(name)-1]
 	}
-	
+
 	// Remove .git extension if present
 	if len(name) > 4 && name[len(name)-4:] == ".git" {
 		name = name[:len(name)-4]
 	}
-	
+
 	// Extract the last part after the final slash
 	if idx := strings.LastIndex(name, "/"); idx >= 0 {
 		name = name[idx+1:]
 	}
-	
+
 	// Handle SSH format (e.g., git@github.com:owner/repo)
 	if idx := strings.LastIndex(name, ":"); idx >= 0 {
 		name = name[idx+1:]
 	}
-	
+
 	return name
 }
 
@@ -126,18 +126,18 @@ var newCommand = &cli.Command{
 	ArgsUsage: "<git-url>",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:  "name",
+			Name:    "name",
 			Aliases: []string{"n"},
-			Usage: "the name of the workspace/project, defaults to the name of the repo",
+			Usage:   "the name of the workspace/project, defaults to the name of the repo",
 		},
 		&cli.StringFlag{
 			Name:  "project-dir",
 			Usage: "the directory to create the workspace in",
 		},
 		&cli.StringFlag{
-			Name:  "git-branch",
+			Name:    "git-branch",
 			Aliases: []string{"branch", "b"},
-			Usage: "the git ref to checkout, defaults to `main`",
+			Usage:   "the git ref to checkout, defaults to `main`",
 		},
 		&cli.BoolFlag{
 			Name:  "initialize-worktree",

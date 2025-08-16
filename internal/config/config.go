@@ -42,7 +42,7 @@ func NewConfig() Config {
 			ScratchPath:        defaultScratchPath,
 			TmuxinatorTemplate: defaultTmuxinatorTemplate,
 		},
-		WorkspaceDir:       defaultWorkspaceDir,
+		WorkspaceDir: defaultWorkspaceDir,
 	}
 }
 
