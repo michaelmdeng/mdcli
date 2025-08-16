@@ -20,16 +20,20 @@ type Config struct {
 	EnableClusterAdminForTest bool `toml:"enable_cluster_admin_for_test"`
 
 	Scratch ScratchConfig `toml:"scratch"`
+
+	WorkspaceDir string `toml:"workspace_dir"`
 }
 
 func NewConfig() Config {
 	homeDir, err := os.UserHomeDir()
 	defaultScratchPath := ""
 	defaultTmuxinatorTemplate := ""
+	defaultWorkspaceDir := ""
 
 	if err == nil {
 		defaultScratchPath = filepath.Join(homeDir, "Source", "scratch")
 		defaultTmuxinatorTemplate = filepath.Join(homeDir, ".config", "mdcli", "scratch.yaml.template")
+		defaultWorkspaceDir = filepath.Join(homeDir, "Source")
 	}
 
 	return Config{
@@ -38,6 +42,7 @@ func NewConfig() Config {
 			ScratchPath:        defaultScratchPath,
 			TmuxinatorTemplate: defaultTmuxinatorTemplate,
 		},
+		WorkspaceDir: defaultWorkspaceDir,
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/michaelmdeng/mdcli/tidb"
 	"github.com/michaelmdeng/mdcli/tmux"
 	"github.com/michaelmdeng/mdcli/wiki"
+	"github.com/michaelmdeng/mdcli/workspace"
 	"github.com/urfave/cli/v2"
 )
 
@@ -44,6 +45,7 @@ func CreateApp(cfg config.Config) cli.App {
 			scratch.BaseCommand(),
 			completion.BaseCommand(),
 			split.BaseCommand(),
+			workspace.BaseCommand(),
 		},
 	}
 }
