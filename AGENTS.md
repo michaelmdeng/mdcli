@@ -11,14 +11,13 @@
   against vulnerabilities and attacks.
 
 # Project Guidelines
+
 * Use Makefile targets to lint, build, test, and run the software rather than using `go
   {build,test,run} ...` directly
 * When creating feature branches, use the format `<author>/<feature-name>` for the branch
   name
-* Use the Github MCP for creating/managing status checks, PRs, and issues. DO NOT use the
-  `gh` CLI when MCP supports the equivalent actions
 * When generating descriptions for commits and PRs, DO NOT mention that the changes are
   generated with or by an agent. When attributing authorship, DO NOT attribute to the
   agent, but rather attribute changes to the author/user that is prompting you. DO NOT
-  include the agent as a co-author to any git commits and only include the author/user as
+  include the agent as a co-author to any git commits and only include the user as
   the author of the commit.
