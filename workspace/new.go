@@ -73,6 +73,17 @@ func newAction(cCtx *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("failed to clone repository: %s", string(output)), 1)
 	}
 
+	cmd = exec.Command("git",
+		"config",
+		"--local",
+		"remote.origin.fetch",
+		"+refs/heads/*:refs/remotes/origin/*",
+	)
+	cmd.Dir = workspacePath
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return cli.Exit(fmt.Sprintf("failed to configure remote fetch: %s", string(output)), 1)
+	}
+
 	if initializeWorktree {
 		worktreesDir := filepath.Join(workspacePath, "worktrees")
 		if err := os.MkdirAll(worktreesDir, 0755); err != nil {
